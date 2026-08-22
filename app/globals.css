@@ -1,0 +1,346 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/* Design tokens: authoritative NES-adjacent palette from the design  */
+/* contract, plus the minimum beach-specific colors.                   */
+/* ------------------------------------------------------------------ */
+:root {
+  --nes-black: #0d0d0d;
+  --px-green: #00a800;
+  --px-green-dark: #007800;
+  --px-red: #e40058;
+  --px-blue: #0058f8;
+  --px-yellow: #f8d800;
+  --px-cyan: #00e8d8;
+  --px-orange: #f87800;
+  --px-white: #fcfcfc;
+  --sand: #f0d890;
+  --sand-dark: #d8b860;
+  --wood: #a05018;
+
+  --background: var(--nes-black);
+  --foreground: var(--px-white);
+
+  /* Layout tokens */
+  --header-h: 56px;
+  --drawer-w: 360px;
+  --control-h: 40px;
+  --border-w: 2px;
+  --shadow-step: 4px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --t-fast: 160ms;
+  --z-hud: 30;
+  --z-sheet: 40;
+  --z-drawer: 50;
+  --z-menu: 60;
+}
+
+@media (pointer: coarse) {
+  :root {
+    --control-h: 44px;
+  }
+}
+
+@theme inline {
+  --color-night: #0d0d0d;
+  --color-pxgreen: #00a800;
+  --color-pxgreendark: #007800;
+  --color-pxred: #e40058;
+  --color-pxblue: #0058f8;
+  --color-pxyellow: #f8d800;
+  --color-pxcyan: #00e8d8;
+  --color-pxorange: #f87800;
+  --color-pxwhite: #fcfcfc;
+  --color-sand: #f0d890;
+  --color-sanddark: #d8b860;
+  --color-wood: #a05018;
+  --font-pixel: var(--font-press-start);
+  --font-mono: var(--font-jetbrains);
+  --radius-none: 0;
+}
+
+/* Design contract: no border radius anywhere. */
+*,
+*::before,
+*::after {
+  border-radius: 0;
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  /* Pixel cursor (generated, original art). Falls back to system cursor. */
+  cursor: url("/assets/ui/cursor-arrow.png") 2 2, auto;
+}
+
+a,
+button,
+[role="button"],
+label,
+select,
+summary,
+input[type="radio"],
+input[type="checkbox"] {
+  cursor: url("/assets/ui/cursor-pointer.png") 10 4, pointer;
+}
+
+.font-pixel {
+  font-family: var(--font-press-start), ui-monospace, monospace;
+}
+
+/* Crisp pixels everywhere sprites are shown. */
+canvas,
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* ------------------------------------------------------------------ */
+/* Pixel UI primitives                                                 */
+/* ------------------------------------------------------------------ */
+.pixel-panel {
+  background: var(--px-white);
+  color: var(--nes-black);
+  border: 2px solid var(--nes-black);
+  box-shadow: 4px 4px 0 0 rgba(13, 13, 13, 0.85);
+}
+
+.pixel-panel-dark {
+  background: var(--nes-black);
+  color: var(--px-white);
+  border: 2px solid var(--px-white);
+  box-shadow: 4px 4px 0 0 rgba(252, 252, 252, 0.25);
+}
+
+.pixel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--font-press-start), ui-monospace, monospace;
+  font-size: 10px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  min-height: var(--control-h);
+  min-width: var(--control-h);
+  border: var(--border-w) solid var(--nes-black);
+  box-shadow: 0 3px 0 0 var(--nes-black);
+  transition:
+    transform 120ms steps(2, end),
+    box-shadow 120ms steps(2, end);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.pixel-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 0 var(--nes-black);
+}
+
+.pixel-btn:disabled {
+  opacity: 0.55;
+  transform: none;
+  box-shadow: 0 3px 0 0 var(--nes-black);
+}
+
+/* Compact variant for chips and secondary controls. */
+.pixel-btn-sm {
+  font-size: 8px;
+  padding: 6px 10px;
+  gap: 4px;
+}
+
+.pixel-btn-primary {
+  background: var(--px-red);
+  color: var(--px-white);
+}
+
+.pixel-btn-secondary {
+  background: var(--px-yellow);
+  color: var(--nes-black);
+}
+
+.pixel-btn-ghost {
+  background: var(--px-white);
+  color: var(--nes-black);
+}
+
+.pixel-btn-dark {
+  background: var(--nes-black);
+  color: var(--px-white);
+  border-color: var(--px-white);
+  box-shadow: 0 4px 0 0 var(--px-white);
+}
+
+.pixel-btn-dark:active {
+  box-shadow: 0 0 0 0 var(--px-white);
+}
+
+:focus-visible {
+  outline: 2px solid var(--px-cyan);
+  outline-offset: 2px;
+}
+
+.pixel-input {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 16px;
+  background: var(--px-white);
+  color: var(--nes-black);
+  border: 2px solid var(--nes-black);
+  padding: 10px 12px;
+  min-height: 44px;
+  width: 100%;
+}
+
+.pixel-input::placeholder {
+  color: #6a6a6a;
+}
+
+/* Swatch + option chips used by the character creator. */
+.pixel-swatch {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--nes-black);
+  box-shadow: 0 2px 0 0 var(--nes-black);
+  padding: 0;
+}
+
+@media (pointer: coarse) {
+  .pixel-swatch {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Selected state uses shape (inner mark + double border), not color alone. */
+.pixel-swatch[aria-pressed="true"],
+.pixel-swatch[data-selected="true"] {
+  outline: 2px solid var(--nes-black);
+  outline-offset: 2px;
+  box-shadow: inset 0 0 0 2px var(--px-white);
+  transform: translateY(1px);
+}
+
+.pixel-swatch[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 8px;
+  height: 8px;
+  transform: translate(-50%, -50%);
+  background: var(--px-white);
+  border: 1px solid var(--nes-black);
+}
+
+/* Status dot (shape + text always paired; never color alone). */
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--nes-black);
+}
+
+/* Drawer + sheet motion: transform/opacity only, fast, reduced-motion safe. */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(32px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.anim-drawer {
+  animation: slide-in-right var(--t-fast) ease-out both;
+}
+
+.anim-sheet {
+  animation: sheet-up var(--t-fast) ease-out both;
+}
+
+.anim-tooltip {
+  animation: tooltip-in 120ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-drawer,
+  .anim-sheet,
+  .anim-tooltip {
+    animation: none;
+  }
+}
+
+/* Blocky loading skeleton, no circular spinners. */
+@keyframes pixel-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.25; }
+}
+
+.pixel-skeleton {
+  background: var(--sand-dark);
+  animation: pixel-blink 900ms steps(2, end) infinite;
+}
+
+@keyframes pixel-bob {
+  0%, 49% { transform: translateY(0); }
+  50%, 100% { transform: translateY(-2px); }
+}
+
+.pixel-bob {
+  animation: pixel-bob 700ms steps(2, end) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pixel-skeleton,
+  .pixel-bob {
+    animation: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Screen-reader-only utility. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
