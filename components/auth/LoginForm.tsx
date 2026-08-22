@@ -90,7 +90,7 @@ export function LoginForm({
     if (err) {
       setError(
         err.status === 429
-          ? "Too many tries. Wait a minute."
+          ? "Email limit hit. Try Google, or wait an hour."
           : "Could not send. Check the address.",
       );
       return;
