@@ -164,16 +164,25 @@ export class BaileysAdapter implements WhatsAppAdapter {
     if (cfg.group_jid) {
       try {
         const meta = await sock.groupMetadata(cfg.group_jid);
-        const me = sock.user?.id?.split(":")[0];
-        const self = meta.participants.find((p) => p.id.startsWith(me ?? "never-matches"));
-        if (self && (self.admin === "admin" || self.admin === "superadmin")) {
-          this.metaCache.set(cfg.group_jid, meta);
+        // Participants may be LID-addressed, so identify ourselves by
+        // phone jid OR lid; when we cannot find ourselves at all, assume
+        // fine rather than raising a false ACTION REQUIRED.
+        const phoneUser = sock.user?.id?.split(":")[0];
+        const lidUser = (sock.user as { lid?: string } | undefined)?.lid?.split(":")[0];
+        const self = meta.participants.find(
+          (p) =>
+            (phoneUser && p.id.startsWith(phoneUser)) ||
+            (lidUser && p.id.startsWith(lidUser)),
+        );
+        if (self && !(self.admin === "admin" || self.admin === "superadmin")) {
+          log.warn("group_admin_rights_missing", {});
+          await updateGroupConfig(this.db, {
+            connection_state: "action_required",
+          });
           return { jid: meta.id, subject: meta.subject };
         }
-        log.warn("group_admin_rights_missing", {});
-        await updateGroupConfig(this.db, {
-          connection_state: "action_required",
-        });
+        this.metaCache.set(cfg.group_jid, meta);
+        await updateGroupConfig(this.db, { connection_state: "connected" });
         return { jid: meta.id, subject: meta.subject };
       } catch {
         log.warn("stored_group_unreachable", {});
