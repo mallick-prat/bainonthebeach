@@ -86,18 +86,31 @@ export async function upsertOwnProfile(
   }
   const supabase = await createSupabaseServer();
   if (!supabase) throw new Error("not_configured");
-  const { error } = await supabase.from("profiles").upsert(
-    {
-      id: userId,
-      display_name: write.displayName,
-      character_config: write.characterConfig,
-      character_schema_version: 1,
-    },
-    { onConflict: "id" },
-  );
-  if (error) {
-    logServer("profile_upsert_failed", { code: error.code });
+  // Update-then-insert instead of upsert: column-level grants deliberately
+  // exclude UPDATE on id, and Postgres checks the upsert's conflict branch
+  // privileges even when no conflict occurs.
+  const fields = {
+    display_name: write.displayName,
+    character_config: write.characterConfig,
+    character_schema_version: 1,
+  };
+  const { data: updated, error: updateError } = await supabase
+    .from("profiles")
+    .update(fields)
+    .eq("id", userId)
+    .select("id");
+  if (updateError) {
+    logServer("profile_update_failed", { code: updateError.code });
     throw new Error("profile_save_failed");
+  }
+  if (!updated || updated.length === 0) {
+    const { error: insertError } = await supabase
+      .from("profiles")
+      .insert({ id: userId, ...fields });
+    if (insertError) {
+      logServer("profile_insert_failed", { code: insertError.code });
+      throw new Error("profile_save_failed");
+    }
   }
 }
 
