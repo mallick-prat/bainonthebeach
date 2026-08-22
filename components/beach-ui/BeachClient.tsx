@@ -65,6 +65,9 @@ export function BeachClient({
   const [selfWa, setSelfWa] = useState<SelfWhatsApp | null>(null);
 
   const hostRef = useRef<HTMLDivElement>(null);
+  /** Canvas-only container; React renders it once and never touches its
+      children, so Pixi's DOM mutations cannot collide with React's. */
+  const gameHostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<BeachGame | null>(null);
   const whosHereRef = useRef<HTMLButtonElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -236,7 +239,7 @@ export function BeachClient({
   /* ---------------- game lifecycle ---------------- */
 
   useEffect(() => {
-    const host = hostRef.current;
+    const host = gameHostRef.current;
     if (!host) return;
     let disposed = false;
     let game: BeachGame | null = null;
@@ -568,8 +571,9 @@ export function BeachClient({
           onKeyDown={onCanvasKeyDown}
           className="absolute inset-0 overflow-hidden outline-offset-[-2px]"
         >
+          <div ref={gameHostRef} className="absolute inset-0" />
           {!gameReady && !gameFailed && (
-            <div className="pixel-skeleton absolute inset-6" aria-hidden />
+            <div className="pixel-skeleton pointer-events-none absolute inset-6" aria-hidden />
           )}
         </div>
 
