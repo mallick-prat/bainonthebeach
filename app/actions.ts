@@ -147,7 +147,15 @@ export async function setBeachStatusAction(
 /* ------------------------- whatsapp ------------------------------- */
 
 const phoneInput = z
-  .object({ phone: z.string().max(32), consent: z.boolean() })
+  .object({
+    phone: z.string().max(32),
+    consent: z.boolean(),
+    // First-time flow: SEND CODE saves the character in the same action.
+    draft: z
+      .object({ displayName: z.string(), config: characterConfigSchema })
+      .strict()
+      .optional(),
+  })
   .strict();
 
 export async function savePhoneAction(raw: unknown): Promise<ActionResult> {
@@ -168,7 +176,20 @@ export async function savePhoneAction(raw: unknown): Promise<ActionResult> {
     return fail("invalid_phone");
   }
 
-  const profile = await getProfile(auth.id).catch(() => null);
+  let profile = await getProfile(auth.id).catch(() => null);
+  if (!profile?.characterConfig && parsed.data.draft) {
+    const draftName = normalizeDisplayName(parsed.data.draft.displayName);
+    if (!draftName.ok) return fail("invalid_name");
+    try {
+      await upsertOwnProfile(auth.id, {
+        displayName: draftName.name,
+        characterConfig: parsed.data.draft.config,
+      });
+    } catch {
+      return fail("save_failed");
+    }
+    profile = await getProfile(auth.id).catch(() => null);
+  }
   if (!profile?.characterConfig) return fail("no_profile");
 
   if (isDemoMode()) {

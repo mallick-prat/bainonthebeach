@@ -8,6 +8,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { AsYouType, isValidPhoneNumber } from "libphonenumber-js/max";
 import type { SelfWhatsApp } from "@/lib/data/types";
+import type { CharacterConfig } from "@/lib/validation/character";
 import { CONSENT_COPY } from "@/lib/whatsapp/membership";
 import {
   disconnectWhatsAppAction,
@@ -42,10 +43,12 @@ export function WhatsAppSection({
   initial,
   demo,
   hasProfile,
+  getDraft,
 }: {
   initial: SelfWhatsApp;
   demo: boolean;
   hasProfile: boolean;
+  getDraft?: () => { displayName: string; config: CharacterConfig };
 }) {
   const [wa, setWa] = useState<SelfWhatsApp>(initial);
   const [phase, setPhase] = useState<Phase>(
@@ -105,7 +108,12 @@ export function WhatsAppSection({
 
   const sendCode = () =>
     run(
-      () => savePhoneAction({ phone: fullNumber, consent }),
+      () =>
+        savePhoneAction({
+          phone: fullNumber,
+          consent,
+          ...(hasProfile ? {} : { draft: getDraft?.() }),
+        }),
       () => {
         setPhase("code");
         setNotice(
@@ -146,11 +154,7 @@ export function WhatsAppSection({
         the beach.
       </p>
 
-      {!hasProfile ? (
-        <p className="font-mono text-xs text-night/50">
-          Save your character first.
-        </p>
-      ) : connectedAndVerified ? (
+      {connectedAndVerified ? (
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-pixel bg-pxgreen px-2 py-1 text-[8px] text-pxwhite">
             {STATE_LABEL[wa.membershipState] ?? "WHATSAPP CONNECTED"}
