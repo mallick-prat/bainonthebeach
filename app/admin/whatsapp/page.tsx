@@ -7,9 +7,19 @@ import QRCode from "qrcode";
 import { getSessionUser } from "@/lib/auth/session";
 import { isDemoMode } from "@/lib/env";
 import { createSupabaseServer } from "@/lib/supabase/server";
-import { AdminActions } from "./actions-ui";
+import { AdminActions, PersonActions } from "./actions-ui";
 
 export const dynamic = "force-dynamic";
+
+interface AdminPerson {
+  userId: string;
+  displayName: string;
+  onBeach: boolean;
+  phoneLastFour: string | null;
+  phoneVerified: boolean;
+  membershipState: string | null;
+  isAnonymous: boolean;
+}
 
 interface AdminStatus {
   connectionState: string;
@@ -63,6 +73,11 @@ export default async function WhatsAppAdminPage() {
     );
   }
 
+  const { data: peopleData } = (await supabase!.rpc("admin_list_people")) as {
+    data: AdminPerson[] | null;
+  };
+  const people: AdminPerson[] = peopleData ?? [];
+
   const qrDataUrl = data.qr
     ? await QRCode.toDataURL(data.qr, { margin: 1, width: 240 })
     : null;
@@ -110,6 +125,34 @@ export default async function WhatsAppAdminPage() {
       )}
 
       <AdminActions />
+
+      <h2 className="font-pixel mt-2 text-[10px] text-pxyellow">PEOPLE</h2>
+      {people.length === 0 ? (
+        <p className="font-mono text-sm text-pxwhite/60">Nobody yet.</p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {people.map((person) => (
+            <li key={person.userId} className="pixel-panel flex flex-col gap-2 p-3">
+              <div className="flex flex-wrap items-center gap-2 font-mono text-sm">
+                <span className="font-bold">{person.displayName}</span>
+                <span className="font-pixel bg-night px-1.5 py-0.5 text-[7px] text-pxwhite">
+                  {person.onBeach ? "ON BEACH" : "OFF BEACH"}
+                </span>
+                {person.phoneLastFour && (
+                  <span className="text-night/60">
+                    ...{person.phoneLastFour}
+                    {person.phoneVerified ? " (verified)" : " (unverified)"}
+                  </span>
+                )}
+                {person.membershipState && (
+                  <span className="text-night/60">{person.membershipState}</span>
+                )}
+              </div>
+              <PersonActions userId={person.userId} onBeach={person.onBeach} />
+            </li>
+          ))}
+        </ul>
+      )}
     </Shell>
   );
 }

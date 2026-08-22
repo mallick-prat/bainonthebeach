@@ -55,3 +55,50 @@ export function AdminActions() {
     </div>
   );
 }
+
+export function PersonActions({ userId, onBeach }: { userId: string; onBeach: boolean }) {
+  const [message, setMessage] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  const run = (command: string) => {
+    setMessage(null);
+    startTransition(async () => {
+      const { adminUserAction } = await import("./actions");
+      const res = await adminUserAction(command, userId);
+      if (!res.ok) setMessage(res.error);
+      else window.location.reload();
+    });
+  };
+
+  return (
+    <span className="flex flex-wrap items-center gap-1.5">
+      <button
+        type="button"
+        className="pixel-btn pixel-btn-dark pixel-btn-sm"
+        disabled={pending}
+        onClick={() => run(onBeach ? "beach_off" : "beach_on")}
+      >
+        {onBeach ? "Pull off beach" : "Put on beach"}
+      </button>
+      <button
+        type="button"
+        className="pixel-btn pixel-btn-dark pixel-btn-sm"
+        disabled={pending}
+        onClick={() => run("disconnect")}
+      >
+        Unlink phone
+      </button>
+      <button
+        type="button"
+        className="pixel-btn pixel-btn-primary pixel-btn-sm"
+        disabled={pending}
+        onClick={() => {
+          if (window.confirm("Delete this person completely?")) run("delete");
+        }}
+      >
+        Delete
+      </button>
+      {message && <span className="font-mono text-xs text-pxred">{message}</span>}
+    </span>
+  );
+}
