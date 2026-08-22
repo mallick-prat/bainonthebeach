@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Separate Node package with its own conventions (not React code).
+    "whatsapp-worker/**",
   ]),
 ]);
 

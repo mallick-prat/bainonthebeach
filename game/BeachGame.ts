@@ -15,14 +15,17 @@ import {
   type Pose,
 } from "./sprites/characterSprites";
 import { spriteCanvas } from "./sprites/toCanvas";
-import { characterStateAt, staticStateFor, walkPose } from "./movement/deterministic";
+import {
+  characterStateAt,
+  staticStateFor,
+  walkPose,
+} from "./movement/deterministic";
 import { WORLD_H, WORLD_W, ROUTES, blockers } from "./world/geometry";
 import { paintGround, worldProps } from "./world/paint";
 
 export interface BeachPerson {
   id: string;
   displayName: string;
-  officeCode: string | null;
   config: CharacterConfig;
   isSelf: boolean;
 }
@@ -55,7 +58,8 @@ export class BeachGame {
   private world = new Container();
   private ground!: Sprite;
   private groundFrames!: [Texture, Texture];
-  private propSprites: Array<{ sprite: Sprite; frames: [Texture, Texture] }> = [];
+  private propSprites: Array<{ sprite: Sprite; frames: [Texture, Texture] }> =
+    [];
   private chars = new Map<string, CharEntry>();
   private selectedId: string | null = null;
   private hoveredId: string | null = null;
@@ -64,6 +68,10 @@ export class BeachGame {
   private focusX = WORLD_W / 2;
   private focusY = WORLD_H / 2;
   private wasDrag = false;
+  /** Camera follows this person while set (click-to-follow). */
+  private followId: string | null = null;
+  /** True when the follow zoom was applied automatically on selection. */
+  private autoZoomed = false;
   private textures = new Map<string, Texture>();
   private resizeObserver: ResizeObserver | null = null;
   private resizeTimer: number | undefined;
@@ -77,13 +85,20 @@ export class BeachGame {
   };
   private destroyed = false;
 
-  private constructor(app: Application, host: HTMLElement, opts: BeachGameOptions) {
+  private constructor(
+    app: Application,
+    host: HTMLElement,
+    opts: BeachGameOptions,
+  ) {
     this.app = app;
     this.host = host;
     this.opts = opts;
   }
 
-  static async create(host: HTMLElement, opts: BeachGameOptions): Promise<BeachGame> {
+  static async create(
+    host: HTMLElement,
+    opts: BeachGameOptions,
+  ): Promise<BeachGame> {
     const app = new Application();
     await app.init({
       width: WORLD_W,
@@ -120,7 +135,10 @@ export class BeachGame {
     );
     this.host.appendChild(canvas);
 
-    this.groundFrames = [this.texture(paintGround(0)), this.texture(paintGround(1))];
+    this.groundFrames = [
+      this.texture(paintGround(0)),
+      this.texture(paintGround(1)),
+    ];
     this.ground = new Sprite(this.groundFrames[0]);
     this.ground.eventMode = "static";
     this.ground.on("pointertap", () => {
@@ -150,7 +168,9 @@ export class BeachGame {
     let lastEnvFrame = -1;
     this.app.ticker.add(() => {
       const now = Date.now();
-      const envFrame = this.opts.reducedMotion ? 0 : Math.floor(now / ENV_FRAME_MS) % 2;
+      const envFrame = this.opts.reducedMotion
+        ? 0
+        : Math.floor(now / ENV_FRAME_MS) % 2;
       if (envFrame !== lastEnvFrame) {
         lastEnvFrame = envFrame;
         const idx = envFrame as 0 | 1;
@@ -217,6 +237,26 @@ export class BeachGame {
     if (entry) this.focusWorld(entry.sprite.x, entry.sprite.y);
   }
 
+  /** Click-to-follow: zoom in on the person and keep them centered. */
+  private setFollow(id: string | null) {
+    if (id) {
+      this.followId = id;
+      if (this.zoomDelta === 0) {
+        this.autoZoomed = true;
+        this.setZoomDelta(2);
+      }
+      this.focusPerson(id);
+    } else {
+      // Clicking off always resets to the full world view.
+      this.followId = null;
+      this.autoZoomed = false;
+      this.focusX = WORLD_W / 2;
+      this.focusY = WORLD_H / 2;
+      this.setZoomDelta(0);
+      this.layout();
+    }
+  }
+
   private attachPan(canvas: HTMLCanvasElement) {
     let dragging = false;
     let moved = 0;
@@ -239,6 +279,7 @@ export class BeachGame {
       moved += Math.abs(dx) + Math.abs(dy);
       if (moved > DRAG_THRESHOLD_PX) {
         this.wasDrag = true;
+        this.followId = null; // dragging takes the camera back
         this.focusX -= dx / this.scale;
         this.focusY -= dy / this.scale;
         this.layout();
@@ -309,9 +350,13 @@ export class BeachGame {
     const halfW = w / 2 / this.scale;
     const halfH = h / 2 / this.scale;
     this.focusX =
-      cssW <= w ? WORLD_W / 2 : Math.max(halfW, Math.min(WORLD_W - halfW, this.focusX));
+      cssW <= w
+        ? WORLD_W / 2
+        : Math.max(halfW, Math.min(WORLD_W - halfW, this.focusX));
     this.focusY =
-      cssH <= h ? WORLD_H / 2 : Math.max(halfH, Math.min(WORLD_H - halfH, this.focusY));
+      cssH <= h
+        ? WORLD_H / 2
+        : Math.max(halfH, Math.min(WORLD_H - halfH, this.focusY));
 
     const left =
       cssW <= w
@@ -326,14 +371,17 @@ export class BeachGame {
   }
 
   /** CSS pixel position of a person inside the host: head top + foot line. */
-  getScreenPosition(id: string): { x: number; y: number; footY: number } | null {
+  getScreenPosition(
+    id: string,
+  ): { x: number; y: number; footY: number } | null {
     const entry = this.chars.get(id);
     if (!entry) return null;
     const canvas = this.app.canvas as HTMLCanvasElement;
     const hostBox = this.host.getBoundingClientRect();
     const box = canvas.getBoundingClientRect();
     const x = box.left - hostBox.left + entry.sprite.x * this.scale;
-    const headY = box.top - hostBox.top + (entry.sprite.y - SPRITE_H + 2) * this.scale;
+    const headY =
+      box.top - hostBox.top + (entry.sprite.y - SPRITE_H + 2) * this.scale;
     const footY = box.top - hostBox.top + entry.sprite.y * this.scale;
     return { x, y: headY, footY };
   }
@@ -393,6 +441,7 @@ export class BeachGame {
 
   setSelected(id: string | null) {
     this.selectedId = id;
+    this.setFollow(id);
     for (const entry of this.chars.values()) entry.lastTexKey = "";
     this.tickCharacters(Date.now());
   }
@@ -416,9 +465,15 @@ export class BeachGame {
         );
         entry.marker.zIndex = state.y;
       }
+      if (this.followId === person.id) {
+        this.focusX = state.x;
+        this.focusY = state.y;
+        this.layout();
+      }
       const pose: Pose = this.opts.reducedMotion ? "idle" : walkPose(state);
       const dir: Direction = state.dir;
-      const highlighted = this.selectedId === person.id || this.hoveredId === person.id;
+      const highlighted =
+        this.selectedId === person.id || this.hoveredId === person.id;
       const outline = highlighted ? "white" : "black";
       const key = spriteKey(person.config, dir, pose, outline);
       if (key !== entry.lastTexKey) {
@@ -482,7 +537,10 @@ export function renderStaticFallback(host: HTMLElement, people: BeachPerson[]) {
   ctx.drawImage(paintGround(0), 0, 0);
   const items: Array<{ footY: number; draw: () => void }> = [];
   for (const prop of worldProps()) {
-    items.push({ footY: prop.footY, draw: () => ctx.drawImage(prop.frames[0], prop.x, prop.y) });
+    items.push({
+      footY: prop.footY,
+      draw: () => ctx.drawImage(prop.frames[0], prop.x, prop.y),
+    });
   }
   for (const person of people) {
     const state = staticStateFor(person.id);

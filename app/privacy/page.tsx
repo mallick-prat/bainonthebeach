@@ -13,8 +13,8 @@ export default function PrivacyPage() {
           <li>Whether you are on the beach, and since when</li>
         </ul>
         <p>
-          Nobody sees your email, your sign-in method, or anything else. Your email
-          is used only to sign you in and to check the domain allowlist.
+          Nobody sees your email, your sign-in method, or anything else. Your
+          email is used only to sign you in and to check the domain allowlist.
         </p>
         <p>
           To delete your profile and account, ask an admin. Deletion removes the

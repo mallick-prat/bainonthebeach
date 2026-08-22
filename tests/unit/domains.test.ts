@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { emailDomain, isEmailAllowed, parseAllowedDomains } from "@/lib/auth/domains";
+import {
+  emailDomain,
+  isEmailAllowed,
+  parseAllowedDomains,
+} from "@/lib/auth/domains";
 
 describe("allowed domain parsing", () => {
   it("unset means open", () => {
@@ -10,7 +14,10 @@ describe("allowed domain parsing", () => {
 
   it("parses a normal list with spaces and leading @", () => {
     const result = parseAllowedDomains(" bain.com , @example.org ");
-    expect(result).toEqual({ kind: "list", domains: ["bain.com", "example.org"] });
+    expect(result).toEqual({
+      kind: "list",
+      domains: ["bain.com", "example.org"],
+    });
   });
 
   it("malformed lists are invalid (fail closed)", () => {
@@ -51,7 +58,9 @@ describe("allowlist enforcement", () => {
   });
 
   it("fails closed on an invalid allowlist", () => {
-    expect(isEmailAllowed("x@bain.com", parseAllowedDomains("garbage!"))).toBe(false);
+    expect(isEmailAllowed("x@bain.com", parseAllowedDomains("garbage!"))).toBe(
+      false,
+    );
   });
 
   it("open allowlist permits anything valid", () => {

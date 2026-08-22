@@ -17,13 +17,29 @@ export const CHARACTER_SCHEMA_VERSION = 1;
 // covers prototype-pollution style payloads ("__proto__", "constructor").
 export const characterConfigSchema = z
   .object({
-    skin: z.number().int().min(0).max(SKIN_TONES.length - 1),
+    skin: z
+      .number()
+      .int()
+      .min(0)
+      .max(SKIN_TONES.length - 1),
     hairStyle: z.enum(HAIR_STYLES),
-    hairColor: z.number().int().min(0).max(HAIR_COLORS.length - 1),
+    hairColor: z
+      .number()
+      .int()
+      .min(0)
+      .max(HAIR_COLORS.length - 1),
     topStyle: z.enum(TOP_STYLES),
-    topColor: z.number().int().min(0).max(CLOTH_COLORS.length - 1),
+    topColor: z
+      .number()
+      .int()
+      .min(0)
+      .max(CLOTH_COLORS.length - 1),
     bottomStyle: z.enum(BOTTOM_STYLES),
-    bottomColor: z.number().int().min(0).max(CLOTH_COLORS.length - 1),
+    bottomColor: z
+      .number()
+      .int()
+      .min(0)
+      .max(CLOTH_COLORS.length - 1),
     shoes: z.enum(SHOE_STYLES),
     accessory: z.enum(ACCESSORIES),
     prop: z.enum(PROPS),
@@ -63,8 +79,11 @@ export function migrateCharacterConfig(
 }
 
 /** Deterministic randomize used by the RANDOMIZE button. Always valid. */
-export function randomCharacter(rand: () => number = Math.random): CharacterConfig {
-  const pick = <T,>(arr: readonly T[]): T => arr[Math.floor(rand() * arr.length)]!;
+export function randomCharacter(
+  rand: () => number = Math.random,
+): CharacterConfig {
+  const pick = <T>(arr: readonly T[]): T =>
+    arr[Math.floor(rand() * arr.length)]!;
   const idx = (n: number) => Math.floor(rand() * n);
   const config: CharacterConfig = {
     skin: idx(SKIN_TONES.length),

@@ -19,7 +19,13 @@ export function AvatarThumb({ config }: { config: CharacterConfig | null }) {
       if (!ctx) return;
       ctx.imageSmoothingEnabled = false;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(spriteCanvas(config, "south", "idle"), 0, 0, SPRITE_W * 2, SPRITE_H * 2);
+      ctx.drawImage(
+        spriteCanvas(config, "south", "idle"),
+        0,
+        0,
+        SPRITE_W * 2,
+        SPRITE_H * 2,
+      );
     })();
     return () => {
       disposed = true;

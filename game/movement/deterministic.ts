@@ -46,7 +46,10 @@ function pausesAtNode(routeIndex: number, nodeIndex: number): boolean {
 
 const timelineCache = new Map<string, Timeline>();
 
-export function buildTimeline(routeIndex: number, params: MovementParams): Timeline {
+export function buildTimeline(
+  routeIndex: number,
+  params: MovementParams,
+): Timeline {
   const key = `${routeIndex}|${params.speed.toFixed(3)}|${params.pauseScale.toFixed(3)}`;
   const cached = timelineCache.get(key);
   if (cached) return cached;
@@ -124,7 +127,10 @@ export function characterStateAt(id: string, tMs: number): CharacterState {
       return {
         x: x + params.offsetX,
         y: y + params.offsetY,
-        dir: facingFromVelocity(seg.to[0] - seg.from[0], seg.to[1] - seg.from[1]),
+        dir: facingFromVelocity(
+          seg.to[0] - seg.from[0],
+          seg.to[1] - seg.from[1],
+        ),
         moving: true,
         dist: seg.distStart + seg.len * frac,
       };

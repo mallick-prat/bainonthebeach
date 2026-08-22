@@ -58,7 +58,8 @@ function crc32(buf) {
     }
   }
   let crc = -1;
-  for (let i = 0; i < buf.length; i++) crc = (crc >>> 8) ^ table[(crc ^ buf[i]) & 0xff];
+  for (let i = 0; i < buf.length; i++)
+    crc = (crc >>> 8) ^ table[(crc ^ buf[i]) & 0xff];
   return (crc ^ -1) >>> 0;
 }
 
@@ -116,4 +117,6 @@ const outDir = join(root, "public", "assets", "ui");
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, "cursor-arrow.png"), renderGrid(ARROW, 2));
 writeFileSync(join(outDir, "cursor-pointer.png"), renderGrid(POINTER, 2));
-console.log("Wrote cursor-arrow.png and cursor-pointer.png to public/assets/ui/");
+console.log(
+  "Wrote cursor-arrow.png and cursor-pointer.png to public/assets/ui/",
+);

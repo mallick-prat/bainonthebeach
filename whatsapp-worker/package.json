@@ -1,0 +1,28 @@
+{
+  "name": "botb-whatsapp-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Persistent WhatsApp worker for Bain on the Beach. Deploy on Railway/Fly/Render, never on Vercel.",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.3",
+    "@whiskeysockets/baileys": "6.17.16",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.2.4",
+    "libphonenumber-js": "^1.12.34",
+    "node-cache": "^5.1.2",
+    "pino": "^10.3.1",
+    "qrcode-terminal": "^0.12.0",
+    "tsx": "^4.20.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/qrcode-terminal": "^0.12.2",
+    "typescript": "^5"
+  }
+}

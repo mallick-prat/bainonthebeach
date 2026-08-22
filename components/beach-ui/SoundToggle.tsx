@@ -19,7 +19,13 @@ const TRACK_KEY = "botb-track";
 
 function SpeakerIcon({ muted }: { muted: boolean }) {
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden shapeRendering="crispEdges">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 14 14"
+      aria-hidden
+      shapeRendering="crispEdges"
+    >
       <rect x="1" y="5" width="3" height="4" fill="currentColor" />
       <rect x="4" y="3" width="2" height="8" fill="currentColor" />
       <rect x="6" y="1" width="2" height="12" fill="currentColor" />

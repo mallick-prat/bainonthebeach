@@ -71,7 +71,13 @@ describe("position over time", () => {
 
   it("handles clock jumps and junk time without breaking", () => {
     const id = IDS[0]!;
-    for (const t of [-5_000_000, 0, Number.MAX_SAFE_INTEGER / 4, NaN, Infinity]) {
+    for (const t of [
+      -5_000_000,
+      0,
+      Number.MAX_SAFE_INTEGER / 4,
+      NaN,
+      Infinity,
+    ]) {
       const state = characterStateAt(id, t);
       expect(Number.isFinite(state.x)).toBe(true);
       expect(Number.isFinite(state.y)).toBe(true);
@@ -97,8 +103,14 @@ describe("facing and walk frames", () => {
   });
 
   it("alternates walk frames with distance and idles when paused", () => {
-    expect(walkPose({ x: 0, y: 0, dir: "south", moving: false, dist: 0 })).toBe("idle");
-    expect(walkPose({ x: 0, y: 0, dir: "south", moving: true, dist: 0 })).toBe("walkA");
-    expect(walkPose({ x: 0, y: 0, dir: "south", moving: true, dist: 8 })).toBe("walkB");
+    expect(walkPose({ x: 0, y: 0, dir: "south", moving: false, dist: 0 })).toBe(
+      "idle",
+    );
+    expect(walkPose({ x: 0, y: 0, dir: "south", moving: true, dist: 0 })).toBe(
+      "walkA",
+    );
+    expect(walkPose({ x: 0, y: 0, dir: "south", moving: true, dist: 8 })).toBe(
+      "walkB",
+    );
   });
 });

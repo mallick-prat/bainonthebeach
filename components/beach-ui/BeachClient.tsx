@@ -6,11 +6,19 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { BeachSnapshot, PublicProfile } from "@/lib/data/types";
+import type {
+  BeachSnapshot,
+  PublicProfile,
+  SelfWhatsApp,
+} from "@/lib/data/types";
 import type { BeachGame, BeachPerson } from "@/game/BeachGame";
 import { rowToProfile, type ProfileRow } from "@/lib/data/convert";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
-import { setBeachStatusAction, signOutAction, type ActionResult } from "@/app/actions";
+import {
+  setBeachStatusAction,
+  signOutAction,
+  type ActionResult,
+} from "@/app/actions";
 import { shardCount, shardFor, dayKey } from "@/game/shard";
 import { clampLabel } from "@/lib/ui/clamp";
 import { nameSortKey } from "@/lib/validation/names";
@@ -34,12 +42,14 @@ export function BeachClient({
   initial: BeachSnapshot;
   selfId: string;
 }) {
-  const [profiles, setProfiles] = useState<Record<string, PublicProfile>>(() => {
-    const map: Record<string, PublicProfile> = {};
-    for (const p of initial.people) map[p.id] = p;
-    if (initial.self) map[initial.self.id] = initial.self;
-    return map;
-  });
+  const [profiles, setProfiles] = useState<Record<string, PublicProfile>>(
+    () => {
+      const map: Record<string, PublicProfile> = {};
+      for (const p of initial.people) map[p.id] = p;
+      if (initial.self) map[initial.self.id] = initial.self;
+      return map;
+    },
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -52,6 +62,7 @@ export function BeachClient({
   const [statusPending, setStatusPending] = useState(false);
   const [shard, setShard] = useState<number | null>(null);
   const [isSheet, setIsSheet] = useState(false);
+  const [selfWa, setSelfWa] = useState<SelfWhatsApp | null>(null);
 
   const hostRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<BeachGame | null>(null);
@@ -66,7 +77,9 @@ export function BeachClient({
   const self = profiles[selfId] ?? null;
   const onBeach = useMemo(
     () =>
-      Object.values(profiles).filter((p) => p.onBeach && p.characterConfig !== null),
+      Object.values(profiles).filter(
+        (p) => p.onBeach && p.characterConfig !== null,
+      ),
     [profiles],
   );
   const totalShards = shardCount(onBeach.length);
@@ -76,11 +89,27 @@ export function BeachClient({
     () =>
       totalShards <= 1
         ? onBeach
-        : onBeach.filter((p) => shardFor(p.id, dayKey(), totalShards) === activeShard),
+        : onBeach.filter(
+            (p) => shardFor(p.id, dayKey(), totalShards) === activeShard,
+          ),
     [onBeach, totalShards, activeShard],
   );
 
   /* ---------------- snapshot + realtime ---------------- */
+
+  const fetchSelfWa = useCallback(async () => {
+    try {
+      const res = await fetch("/api/whatsapp/me", { cache: "no-store" });
+      if (res.ok) setSelfWa((await res.json()) as SelfWhatsApp);
+    } catch {
+      // transient; refreshed after the next status change
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => void fetchSelfWa(), 0);
+    return () => window.clearTimeout(timer);
+  }, [fetchSelfWa]);
 
   const fetchSnapshot = useCallback(async () => {
     try {
@@ -253,7 +282,8 @@ export function BeachClient({
       }
     })();
 
-    const onMotion = () => gameRef.current?.setReducedMotion(reducedQuery.matches);
+    const onMotion = () =>
+      gameRef.current?.setReducedMotion(reducedQuery.matches);
     reducedQuery.addEventListener("change", onMotion);
 
     return () => {
@@ -267,7 +297,9 @@ export function BeachClient({
 
   useEffect(() => {
     if (!gameReady) return;
-    gameRef.current?.setPeople(islandPeople.map((p) => toBeachPerson(p, selfId)));
+    gameRef.current?.setPeople(
+      islandPeople.map((p) => toBeachPerson(p, selfId)),
+    );
   }, [islandPeople, selfId, gameReady]);
 
   // Sheet-vs-tooltip presentation.
@@ -288,11 +320,21 @@ export function BeachClient({
     const update = () => {
       const pos = gameRef.current?.getScreenPosition(activeLabelId);
       if (!pos || !host) return;
-      const el = host.parentElement?.querySelector<HTMLElement>("[data-person-label]");
+      const el = host.parentElement?.querySelector<HTMLElement>(
+        "[data-person-label]",
+      );
       const lw = el?.offsetWidth ?? 110;
       const lh = el?.offsetHeight ?? 30;
-      const place = clampLabel(pos.x, pos.y, lw, lh, host.clientWidth, host.clientHeight);
-      if (place.below) place.y = Math.min(pos.footY + 6, host.clientHeight - lh - 4);
+      const place = clampLabel(
+        pos.x,
+        pos.y,
+        lw,
+        lh,
+        host.clientWidth,
+        host.clientHeight,
+      );
+      if (place.below)
+        place.y = Math.min(pos.footY + 6, host.clientHeight - lh - 4);
       setLabelPos({ x: place.x, y: place.y });
     };
     update();
@@ -377,7 +419,10 @@ export function BeachClient({
       },
     }));
     const timeout = new Promise<ActionResult>((resolve) =>
-      window.setTimeout(() => resolve({ ok: false, error: "Timed out. Try again." }), 8000),
+      window.setTimeout(
+        () => resolve({ ok: false, error: "Timed out. Try again." }),
+        8000,
+      ),
     );
     void Promise.race([
       setBeachStatusAction(join).then((r) => r ?? { ok: true as const }),
@@ -388,8 +433,11 @@ export function BeachClient({
           setProfiles((p) => ({ ...p, [selfId]: prev }));
           setAnnouncement(res.error);
         } else {
-          setAnnouncement(join ? "You are on the beach." : "You left the beach.");
+          setAnnouncement(
+            join ? "You are on the beach." : "You left the beach.",
+          );
         }
+        void fetchSelfWa();
       })
       .finally(() => setStatusPending(false));
   };
@@ -427,11 +475,6 @@ export function BeachClient({
         <span className="font-pixel hidden truncate text-[9px] text-pxyellow sm:inline">
           ON THE BEACH
         </span>
-        {initial.demo && (
-          <span className="font-pixel bg-pxorange px-1.5 py-0.5 text-[7px] text-night">
-            DEMO
-          </span>
-        )}
         <span className="flex-1" />
         <button
           ref={whosHereRef}
@@ -476,13 +519,11 @@ export function BeachClient({
       {menuOpen && (
         <div
           ref={menuRef}
-          role="menu"
           aria-label="Settings"
           className="anim-drawer pixel-panel-dark absolute right-2 top-[calc(var(--header-h)+6px)] z-[60] flex w-56 flex-col gap-2 p-2"
         >
           <Link
             href="/create-character"
-            role="menuitem"
             className="pixel-btn pixel-btn-dark pixel-btn-sm justify-start"
           >
             Edit character
@@ -490,7 +531,6 @@ export function BeachClient({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              role="menuitem"
               className="pixel-btn pixel-btn-dark pixel-btn-sm"
               aria-label="Zoom out"
               onClick={() => changeZoom(-1)}
@@ -502,7 +542,6 @@ export function BeachClient({
             </span>
             <button
               type="button"
-              role="menuitem"
               className="pixel-btn pixel-btn-dark pixel-btn-sm"
               aria-label="Zoom in"
               onClick={() => changeZoom(1)}
@@ -512,7 +551,7 @@ export function BeachClient({
           </div>
           <SoundToggle />
           <form action={signOutAction}>
-            <button role="menuitem" className="pixel-btn pixel-btn-dark pixel-btn-sm w-full justify-start">
+            <button className="pixel-btn pixel-btn-dark pixel-btn-sm w-full justify-start">
               Sign out
             </button>
           </form>
@@ -558,6 +597,43 @@ export function BeachClient({
         {islandPeople.length === 0 && (gameReady || gameFailed) && (
           <div className="pixel-panel pointer-events-none absolute left-1/2 top-8 z-20 -translate-x-1/2 px-3 py-2">
             <p className="font-pixel text-[9px]">THE BEACH IS QUIET</p>
+          </div>
+        )}
+
+        {/* WhatsApp group chat, only while on the beach and connected. */}
+        {isOn && selfWa?.verified && selfWa.optedIn && (
+          <div className="absolute bottom-3 right-3 z-20">
+            {selfWa.membershipState === "member" && selfWa.inviteUrl ? (
+              <a
+                href={selfWa.inviteUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="pixel-btn pixel-btn-secondary pixel-btn-sm"
+              >
+                Open group chat
+              </a>
+            ) : selfWa.membershipState === "invite_required" &&
+              selfWa.inviteUrl ? (
+              <div className="pixel-panel max-w-56 p-2">
+                <p className="mb-2 font-mono text-xs">
+                  WhatsApp requires you to approve the group invitation. Tap
+                  below to join Bain on the Beach.
+                </p>
+                <a
+                  href={selfWa.inviteUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="pixel-btn pixel-btn-primary pixel-btn-sm"
+                >
+                  Join WhatsApp group
+                </a>
+              </div>
+            ) : selfWa.membershipState === "queued" ||
+              selfWa.membershipState === "syncing" ? (
+              <span className="font-pixel bg-night px-2 py-1 text-[8px] text-pxwhite/80">
+                WHATSAPP SYNCING
+              </span>
+            ) : null}
           </div>
         )}
 
@@ -619,7 +695,6 @@ function toBeachPerson(p: PublicProfile, selfId: string): BeachPerson {
   return {
     id: p.id,
     displayName: p.displayName,
-    officeCode: p.officeCode,
     config: p.characterConfig!,
     isSelf: p.id === selfId,
   };

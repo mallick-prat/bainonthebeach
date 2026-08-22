@@ -4,7 +4,7 @@
 import "server-only";
 import { isDemoMode } from "@/lib/env";
 import { createSupabaseServer } from "@/lib/supabase/server";
-import { demoStore } from "./demo";
+import { demoReconcileMembership, demoStore } from "./demo";
 import type { BeachSnapshot, PublicProfile } from "./types";
 import type { CharacterConfig } from "@/lib/validation/character";
 import { rowToProfile, type ProfileRow } from "./convert";
@@ -12,9 +12,11 @@ import { applyStatus } from "./statusInvariant";
 import { logServer } from "@/lib/observability/log";
 
 const PUBLIC_COLUMNS =
-  "id, display_name, office_code, character_config, character_schema_version, on_beach, on_beach_since";
+  "id, display_name, character_config, character_schema_version, on_beach, on_beach_since";
 
-export async function getProfile(userId: string): Promise<PublicProfile | null> {
+export async function getProfile(
+  userId: string,
+): Promise<PublicProfile | null> {
   if (isDemoMode()) {
     return demoStore().profiles.get(userId) ?? null;
   }
@@ -32,7 +34,9 @@ export async function getProfile(userId: string): Promise<PublicProfile | null> 
   return data ? rowToProfile(data as ProfileRow) : null;
 }
 
-export async function getBeachSnapshot(selfId: string | null): Promise<BeachSnapshot> {
+export async function getBeachSnapshot(
+  selfId: string | null,
+): Promise<BeachSnapshot> {
   if (isDemoMode()) {
     const store = demoStore();
     const people = [...store.profiles.values()].filter((p) => p.onBeach);
@@ -60,7 +64,6 @@ export async function getBeachSnapshot(selfId: string | null): Promise<BeachSnap
 
 export interface ProfileWrite {
   displayName: string;
-  officeCode: string | null;
   characterConfig: CharacterConfig;
 }
 
@@ -74,7 +77,6 @@ export async function upsertOwnProfile(
     store.profiles.set(userId, {
       id: userId,
       displayName: write.displayName,
-      officeCode: write.officeCode,
       characterConfig: write.characterConfig,
       characterSchemaVersion: 1,
       onBeach: existing?.onBeach ?? false,
@@ -88,7 +90,6 @@ export async function upsertOwnProfile(
     {
       id: userId,
       display_name: write.displayName,
-      office_code: write.officeCode,
       character_config: write.characterConfig,
       character_schema_version: 1,
     },
@@ -101,7 +102,10 @@ export async function upsertOwnProfile(
 }
 
 /** Atomic status change; on_beach and on_beach_since always move together. */
-export async function setBeachStatus(userId: string, join: boolean): Promise<void> {
+export async function setBeachStatus(
+  userId: string,
+  join: boolean,
+): Promise<void> {
   if (isDemoMode()) {
     const store = demoStore();
     const existing = store.profiles.get(userId);
@@ -112,11 +116,14 @@ export async function setBeachStatus(userId: string, join: boolean): Promise<voi
       onBeach: status.onBeach,
       onBeachSince: status.onBeachSince,
     });
+    demoReconcileMembership(userId);
     return;
   }
   const supabase = await createSupabaseServer();
   if (!supabase) throw new Error("not_configured");
-  const { error } = await supabase.rpc("set_beach_status", { p_on_beach: join });
+  const { error } = await supabase.rpc("set_beach_status", {
+    p_on_beach: join,
+  });
   if (error) {
     logServer("status_change_failed", { code: error.code });
     throw new Error("status_change_failed");

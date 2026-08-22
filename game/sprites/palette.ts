@@ -62,7 +62,14 @@ export const HAIR_COLORS = [
   PAL.blue,
 ] as const;
 
-export const HAIR_STYLES = ["none", "short", "spiky", "bob", "long", "bun"] as const;
+export const HAIR_STYLES = [
+  "none",
+  "short",
+  "spiky",
+  "bob",
+  "long",
+  "bun",
+] as const;
 export const TOP_STYLES = ["tee", "tank", "buttonup"] as const;
 export const BOTTOM_STYLES = ["shorts", "pants", "trunks"] as const;
 export const SHOE_STYLES = ["sandals", "sneakers", "barefoot"] as const;

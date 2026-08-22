@@ -5,7 +5,6 @@
 do $$
 declare
   names text[] := array['Priya', 'Casey', 'Jordan', 'Sam O.', 'Devon', 'Riley', 'Jordan', 'Avery'];
-  offices text[] := array['BOS', 'NYC', 'SF', 'BOS', 'CHI', 'SYD', null, 'LON'];
   uid uuid;
   i int;
 begin
@@ -22,10 +21,10 @@ begin
       '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb
     );
     insert into public.profiles (
-      id, display_name, office_code, character_config,
+      id, display_name, character_config,
       character_schema_version, on_beach, on_beach_since
     ) values (
-      uid, names[i], offices[i],
+      uid, names[i],
       jsonb_build_object(
         'skin', (i * 7) % 6,
         'hairStyle', (array['short','spiky','bob','long','bun','none'])[1 + (i % 6)],

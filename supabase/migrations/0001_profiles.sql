@@ -3,7 +3,6 @@
 create table public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   display_name text not null,
-  office_code text,
   character_config jsonb not null,
   character_schema_version integer not null default 1,
   on_beach boolean not null default false,
@@ -14,10 +13,6 @@ create table public.profiles (
   constraint display_name_length check (
     char_length(display_name) between 1 and 64
     and btrim(display_name) <> ''
-  ),
-  constraint office_code_allowed check (
-    office_code is null
-    or office_code in ('BOS', 'NYC', 'SF', 'CHI', 'LON', 'SYD')
   ),
   constraint schema_version_positive check (character_schema_version > 0),
   -- on_beach_since is non-null exactly when on_beach is true.
@@ -77,9 +72,9 @@ create policy profiles_update_own
 -- server-maintained timestamps, or the status pair directly. Status changes
 -- go through set_beach_status() so the pair stays atomic and consistent.
 revoke insert, update on public.profiles from authenticated;
-grant insert (id, display_name, office_code, character_config, character_schema_version)
+grant insert (id, display_name, character_config, character_schema_version)
   on public.profiles to authenticated;
-grant update (display_name, office_code, character_config, character_schema_version)
+grant update (display_name, character_config, character_schema_version)
   on public.profiles to authenticated;
 
 -- Atomic status change -------------------------------------------------------

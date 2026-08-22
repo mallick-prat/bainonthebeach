@@ -7,7 +7,8 @@ import { getBeachSnapshot } from "@/lib/data/profiles";
 
 export async function GET() {
   const user = await getSessionUser();
-  if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!user)
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   try {
     const snapshot = await getBeachSnapshot(user.id);
     return NextResponse.json(snapshot, {

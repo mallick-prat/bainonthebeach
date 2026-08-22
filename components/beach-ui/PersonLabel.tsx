@@ -3,7 +3,6 @@
 // Compact identity tooltip anchored above a character (desktop) or shown as
 // a bottom sheet (touch). Light, small, never covers its target.
 
-import { officeLabel } from "@/lib/config/offices";
 import type { PublicProfile } from "@/lib/data/types";
 
 export function PersonLabel({
@@ -21,14 +20,17 @@ export function PersonLabel({
   asSheet: boolean;
   onClose: () => void;
 }) {
-  const office = officeLabel(person.officeCode);
   const body = (
     <>
       <p className="font-pixel text-[8px] leading-relaxed">
         {person.displayName}
-        {isSelf && <span className="ml-1.5 bg-pxcyan px-1 text-night">YOU</span>}
+        {isSelf && (
+          <span className="ml-1.5 bg-pxcyan px-1 text-night">YOU</span>
+        )}
       </p>
-      {office && <p className="font-mono text-[11px] text-night/70">{office}</p>}
+      <p className="font-mono text-[11px] text-night/70">
+        {person.onBeach ? "On the beach" : "Off the beach"}
+      </p>
     </>
   );
 

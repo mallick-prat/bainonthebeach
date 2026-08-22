@@ -15,5 +15,7 @@ export function applyStatus(join: boolean, now: Date): StatusFields {
 }
 
 export function statusIsConsistent(fields: StatusFields): boolean {
-  return fields.onBeach ? fields.onBeachSince !== null : fields.onBeachSince === null;
+  return fields.onBeach
+    ? fields.onBeachSince !== null
+    : fields.onBeachSince === null;
 }

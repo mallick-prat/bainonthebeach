@@ -26,14 +26,12 @@ export function normalizeDisplayName(input: string): NameResult {
   const visible = [...name];
   if (visible.length > MAX_VISIBLE) return { ok: false, error: "too_long" };
   // Reject names with no visible ink (only spaces/marks after stripping).
-  if (!/[\p{L}\p{N}\p{S}\p{P}]/u.test(name)) return { ok: false, error: "invalid" };
+  if (!/[\p{L}\p{N}\p{S}\p{P}]/u.test(name))
+    return { ok: false, error: "invalid" };
   return { ok: true, name };
 }
 
 /** Case/diacritic-insensitive key for sorting the WHO'S HERE list. */
 export function nameSortKey(name: string): string {
-  return name
-    .normalize("NFD")
-    .replace(/\p{M}/gu, "")
-    .toLowerCase();
+  return name.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 }

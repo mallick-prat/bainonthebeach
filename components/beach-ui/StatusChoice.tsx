@@ -31,7 +31,11 @@ export function StatusChoice() {
       >
         Not today
       </button>
-      <p role="status" aria-live="polite" className="min-h-5 text-center text-sm text-pxred">
+      <p
+        role="status"
+        aria-live="polite"
+        className="min-h-5 text-center text-sm text-pxred"
+      >
         {error}
       </p>
     </div>

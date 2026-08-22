@@ -26,8 +26,10 @@ export function LoginForm({
 
   if (demo) {
     return (
-      <form action={demoAction} className="pixel-panel flex w-full max-w-sm flex-col gap-3 p-4">
-        <p className="font-pixel text-[10px] text-pxred">DEMO MODE</p>
+      <form
+        action={demoAction}
+        className="pixel-panel flex w-full max-w-sm flex-col gap-3 p-4"
+      >
         <label className="text-sm" htmlFor="email">
           Email
         </label>
@@ -87,7 +89,9 @@ export function LoginForm({
     setBusy(false);
     if (err) {
       setError(
-        err.status === 429 ? "Too many tries. Wait a minute." : "Could not send. Check the address.",
+        err.status === 429
+          ? "Too many tries. Wait a minute."
+          : "Could not send. Check the address.",
       );
       return;
     }
@@ -123,10 +127,17 @@ export function LoginForm({
           Cookies are blocked. Sign in needs them.
         </p>
       )}
-      <button type="button" onClick={signInGoogle} className="pixel-btn pixel-btn-secondary">
+      <button
+        type="button"
+        onClick={signInGoogle}
+        className="pixel-btn pixel-btn-secondary"
+      >
         Continue with Google
       </button>
-      <div className="my-1 border-t-2 border-dashed border-night/30" aria-hidden />
+      <div
+        className="my-1 border-t-2 border-dashed border-night/30"
+        aria-hidden
+      />
       {phase === "start" ? (
         <form onSubmit={sendEmail} className="flex flex-col gap-3">
           <label className="text-sm" htmlFor="email">

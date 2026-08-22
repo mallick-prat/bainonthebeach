@@ -6,7 +6,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PublicProfile } from "@/lib/data/types";
 import { nameSortKey } from "@/lib/validation/names";
-import { officeLabel } from "@/lib/config/offices";
 import { AvatarThumb } from "./AvatarThumb";
 
 export function WhosHereDrawer({
@@ -80,7 +79,10 @@ export function WhosHereDrawer({
     >
       <div className="sticky top-0 flex items-center justify-between gap-2 border-b-2 border-night bg-pxwhite px-3 py-2">
         {sheet && (
-          <span aria-hidden className="absolute left-1/2 top-1 h-1 w-10 -translate-x-1/2 bg-night/30" />
+          <span
+            aria-hidden
+            className="absolute left-1/2 top-1 h-1 w-10 -translate-x-1/2 bg-night/30"
+          />
         )}
         <h2 className="font-pixel text-[9px]">
           WHO&apos;S HERE <span aria-hidden>·</span> {people.length}
@@ -112,7 +114,6 @@ export function WhosHereDrawer({
           </li>
         )}
         {filtered.map((p) => {
-          const office = officeLabel(p.officeCode);
           return (
             <li key={p.id}>
               <button
@@ -125,12 +126,14 @@ export function WhosHereDrawer({
                   <span className="block truncate font-mono text-sm font-bold">
                     {p.displayName}
                     {p.id === selfId && (
-                      <span className="font-pixel ml-2 bg-pxcyan px-1 text-[7px]">YOU</span>
+                      <span className="font-pixel ml-2 bg-pxcyan px-1 text-[7px]">
+                        YOU
+                      </span>
                     )}
                   </span>
-                  {office && (
-                    <span className="block font-mono text-xs text-night/60">{office}</span>
-                  )}
+                  <span className="block font-mono text-xs text-night/60">
+                    On the beach
+                  </span>
                 </span>
               </button>
             </li>

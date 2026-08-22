@@ -1,5 +1,6 @@
 // Row -> PublicProfile conversion shared by the server data layer and the
-// browser realtime reconciler. Safe for both bundles.
+// browser realtime reconciler. Safe for both bundles. Phone fields live in
+// a separate private table and never appear here.
 
 import { migrateCharacterConfig } from "@/lib/validation/character";
 import type { PublicProfile } from "./types";
@@ -7,7 +8,6 @@ import type { PublicProfile } from "./types";
 export interface ProfileRow {
   id: string;
   display_name: string;
-  office_code: string | null;
   character_config: unknown;
   character_schema_version: number;
   on_beach: boolean;
@@ -18,7 +18,6 @@ export function rowToProfile(row: ProfileRow): PublicProfile {
   return {
     id: row.id,
     displayName: row.display_name,
-    officeCode: row.office_code,
     // A config from a future schema version renders as null -> safe default.
     characterConfig: migrateCharacterConfig(
       row.character_config,

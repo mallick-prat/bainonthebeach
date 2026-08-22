@@ -29,7 +29,10 @@ export interface MovementParams {
   offsetY: number;
 }
 
-export function deriveMovementParams(id: string, routeCount: number): MovementParams {
+export function deriveMovementParams(
+  id: string,
+  routeCount: number,
+): MovementParams {
   return {
     routeIndex: fnv1a(id, 1) % Math.max(1, routeCount),
     phase01: hash01(id, 2),

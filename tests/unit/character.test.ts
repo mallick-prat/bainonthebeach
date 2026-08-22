@@ -9,7 +9,9 @@ import {
 
 describe("character config validation", () => {
   it("accepts the default character", () => {
-    expect(characterConfigSchema.safeParse(DEFAULT_CHARACTER).success).toBe(true);
+    expect(characterConfigSchema.safeParse(DEFAULT_CHARACTER).success).toBe(
+      true,
+    );
   });
 
   it("rejects unknown layer ids", () => {
@@ -19,19 +21,23 @@ describe("character config validation", () => {
 
   it("rejects out-of-range palette indices", () => {
     expect(
-      characterConfigSchema.safeParse({ ...DEFAULT_CHARACTER, skin: 99 }).success,
+      characterConfigSchema.safeParse({ ...DEFAULT_CHARACTER, skin: 99 })
+        .success,
     ).toBe(false);
     expect(
-      characterConfigSchema.safeParse({ ...DEFAULT_CHARACTER, topColor: -1 }).success,
+      characterConfigSchema.safeParse({ ...DEFAULT_CHARACTER, topColor: -1 })
+        .success,
     ).toBe(false);
     expect(
-      characterConfigSchema.safeParse({ ...DEFAULT_CHARACTER, skin: 1.5 }).success,
+      characterConfigSchema.safeParse({ ...DEFAULT_CHARACTER, skin: 1.5 })
+        .success,
     ).toBe(false);
   });
 
   it("rejects unknown and prototype-pollution keys", () => {
     expect(
-      characterConfigSchema.safeParse({ ...DEFAULT_CHARACTER, extra: 1 }).success,
+      characterConfigSchema.safeParse({ ...DEFAULT_CHARACTER, extra: 1 })
+        .success,
     ).toBe(false);
     // Zod builds a fresh object from known keys, so a "__proto__" payload
     // can never pollute the prototype of the parsed result.
@@ -47,9 +53,9 @@ describe("character config validation", () => {
   });
 
   it("migrates current version and rejects future versions", () => {
-    expect(migrateCharacterConfig(DEFAULT_CHARACTER, CHARACTER_SCHEMA_VERSION)).toEqual(
-      DEFAULT_CHARACTER,
-    );
+    expect(
+      migrateCharacterConfig(DEFAULT_CHARACTER, CHARACTER_SCHEMA_VERSION),
+    ).toEqual(DEFAULT_CHARACTER);
     expect(
       migrateCharacterConfig(DEFAULT_CHARACTER, CHARACTER_SCHEMA_VERSION + 1),
     ).toBeNull();

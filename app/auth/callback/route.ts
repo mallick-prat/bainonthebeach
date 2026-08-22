@@ -30,14 +30,19 @@ export async function GET(request: NextRequest) {
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
-      logServer("auth_callback_exchange_failed", { code: error.code ?? "unknown" });
+      logServer("auth_callback_exchange_failed", {
+        code: error.code ?? "unknown",
+      });
       // A second open of the same link lands here; if a session already
       // exists, continue instead of showing an error.
       const { data } = await supabase.auth.getUser();
       if (!data.user) return loginWith("expired");
     }
   } else if (tokenHash && type) {
-    const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type,
+    });
     if (error) {
       logServer("auth_callback_otp_failed", { code: error.code ?? "unknown" });
       const { data } = await supabase.auth.getUser();

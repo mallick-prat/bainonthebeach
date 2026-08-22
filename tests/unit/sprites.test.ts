@@ -4,7 +4,11 @@ import {
   SPRITE_H,
   SPRITE_W,
 } from "@/game/sprites/characterSprites";
-import { DEFAULT_CHARACTER, randomCharacter, type CharacterConfig } from "@/lib/validation/character";
+import {
+  DEFAULT_CHARACTER,
+  randomCharacter,
+  type CharacterConfig,
+} from "@/lib/validation/character";
 
 function filledCount(data: Uint8ClampedArray): number {
   let n = 0;
@@ -35,7 +39,9 @@ describe("sprite compositor", () => {
   it("walk frames differ from each other and from idle", () => {
     const a = composeSprite(DEFAULT_CHARACTER, "south", "walkA").data.join(",");
     const b = composeSprite(DEFAULT_CHARACTER, "south", "walkB").data.join(",");
-    const idle = composeSprite(DEFAULT_CHARACTER, "south", "idle").data.join(",");
+    const idle = composeSprite(DEFAULT_CHARACTER, "south", "idle").data.join(
+      ",",
+    );
     expect(a).not.toBe(b);
     expect(a).not.toBe(idle);
   });

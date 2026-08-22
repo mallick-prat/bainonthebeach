@@ -58,10 +58,7 @@ const FRONT_TORSO = [
   "...tttttttttt...",
 ];
 
-const FRONT_HIPS = [
-  "...bbbbbbbbbb...",
-  "...bbbbbbbbbb...",
-];
+const FRONT_HIPS = ["...bbbbbbbbbb...", "...bbbbbbbbbb..."];
 
 const FRONT_LEGS_IDLE = [
   "...bbbb..bbbb...",
@@ -102,10 +99,7 @@ const EAST_TORSO = [
   "....tttttttt....",
 ];
 
-const EAST_HIPS = [
-  "....bbbbbbbb....",
-  "....bbbbbbbb....",
-];
+const EAST_HIPS = ["....bbbbbbbb....", "....bbbbbbbb...."];
 
 const EAST_LEGS_IDLE = [
   ".....bbbbbb.....",
@@ -141,7 +135,8 @@ function bodyGrid(dir: "south" | "north" | "east", pose: Pose): string[] {
         : pose === "walkA"
           ? FRONT_LEGS_A
           : FRONT_LEGS_B;
-  if (dir === "east") return [...EAST_HEAD, ...EAST_TORSO, ...EAST_HIPS, ...legs];
+  if (dir === "east")
+    return [...EAST_HEAD, ...EAST_TORSO, ...EAST_HIPS, ...legs];
   const head = dir === "south" ? SOUTH_HEAD : NORTH_HEAD;
   return [...head, ...FRONT_TORSO, ...FRONT_HIPS, ...legs];
 }
@@ -163,38 +158,105 @@ type DirKey = "south" | "north" | "east";
 const HAIR: Record<string, Partial<Record<DirKey, Overlay>>> = {
   none: {},
   short: {
-    south: { dy: -1, z: "front", rows: [".....hhhhhh.....", "....hhhhhhhh....", "....hh....hh...."] },
+    south: {
+      dy: -1,
+      z: "front",
+      rows: [".....hhhhhh.....", "....hhhhhhhh....", "....hh....hh...."],
+    },
     north: {
       dy: -1,
       z: "front",
-      rows: [".....hhhhhh.....", "....hhhhhhhh....", "....hhhhhhhh....", "....hhhhhhhh....", "....hhhhhhhh...."],
+      rows: [
+        ".....hhhhhh.....",
+        "....hhhhhhhh....",
+        "....hhhhhhhh....",
+        "....hhhhhhhh....",
+        "....hhhhhhhh....",
+      ],
     },
-    east: { dy: -1, z: "front", rows: [".....hhhhhh.....", "....hhhhhhhh....", "....hhhhhh......", "....hhh.........", "....hh.........."] },
+    east: {
+      dy: -1,
+      z: "front",
+      rows: [
+        ".....hhhhhh.....",
+        "....hhhhhhhh....",
+        "....hhhhhh......",
+        "....hhh.........",
+        "....hh..........",
+      ],
+    },
   },
   spiky: {
-    south: { dy: -2, z: "front", rows: ["....h.h..h.h....", ".....hhhhhh.....", "....hhhhhhhh....", "....hh....hh...."] },
+    south: {
+      dy: -2,
+      z: "front",
+      rows: [
+        "....h.h..h.h....",
+        ".....hhhhhh.....",
+        "....hhhhhhhh....",
+        "....hh....hh....",
+      ],
+    },
     north: {
       dy: -2,
       z: "front",
-      rows: ["....h.h..h.h....", ".....hhhhhh.....", "....hhhhhhhh....", "....hhhhhhhh....", "....hhhhhhhh....", "....hhhhhhhh...."],
+      rows: [
+        "....h.h..h.h....",
+        ".....hhhhhh.....",
+        "....hhhhhhhh....",
+        "....hhhhhhhh....",
+        "....hhhhhhhh....",
+        "....hhhhhhhh....",
+      ],
     },
-    east: { dy: -2, z: "front", rows: ["....h.h..h.h....", ".....hhhhhh.....", "....hhhhhhhh....", "....hhhh........", "....hh.........."] },
+    east: {
+      dy: -2,
+      z: "front",
+      rows: [
+        "....h.h..h.h....",
+        ".....hhhhhh.....",
+        "....hhhhhhhh....",
+        "....hhhh........",
+        "....hh..........",
+      ],
+    },
   },
   bob: {
     south: {
       dy: -1,
       z: "front",
-      rows: [".....hhhhhh.....", "....hhhhhhhh....", "...hhh....hhh...", "...hhh....hhh...", "...hhh....hhh...", "...hh......hh..."],
+      rows: [
+        ".....hhhhhh.....",
+        "....hhhhhhhh....",
+        "...hhh....hhh...",
+        "...hhh....hhh...",
+        "...hhh....hhh...",
+        "...hh......hh...",
+      ],
     },
     north: {
       dy: -1,
       z: "front",
-      rows: [".....hhhhhh.....", "...hhhhhhhhhh...", "...hhhhhhhhhh...", "...hhhhhhhhhh...", "...hhhhhhhhhh...", "...hhhhhhhhhh..."],
+      rows: [
+        ".....hhhhhh.....",
+        "...hhhhhhhhhh...",
+        "...hhhhhhhhhh...",
+        "...hhhhhhhhhh...",
+        "...hhhhhhhhhh...",
+        "...hhhhhhhhhh...",
+      ],
     },
     east: {
       dy: -1,
       z: "front",
-      rows: [".....hhhhhh.....", "....hhhhhhhh....", "...hhhhhh.......", "...hhhh.........", "...hhhh.........", "...hhh.........."],
+      rows: [
+        ".....hhhhhh.....",
+        "....hhhhhhhh....",
+        "...hhhhhh.......",
+        "...hhhh.........",
+        "...hhhh.........",
+        "...hhh..........",
+      ],
     },
   },
   long: {
@@ -242,57 +304,185 @@ const HAIR: Record<string, Partial<Record<DirKey, Overlay>>> = {
     },
   },
   bun: {
-    south: { dy: -3, z: "front", rows: [".......hh.......", "......hhhh......", ".....hhhhhh.....", "....hhhhhhhh....", "....hh....hh...."] },
+    south: {
+      dy: -3,
+      z: "front",
+      rows: [
+        ".......hh.......",
+        "......hhhh......",
+        ".....hhhhhh.....",
+        "....hhhhhhhh....",
+        "....hh....hh....",
+      ],
+    },
     north: {
       dy: -3,
       z: "front",
-      rows: [".......hh.......", "......hhhh......", ".....hhhhhh.....", "....hhhhhhhh....", "....hhhhhhhh....", "....hhhhhhhh...."],
+      rows: [
+        ".......hh.......",
+        "......hhhh......",
+        ".....hhhhhh.....",
+        "....hhhhhhhh....",
+        "....hhhhhhhh....",
+        "....hhhhhhhh....",
+      ],
     },
-    east: { dy: -3, z: "front", rows: ["...hh...........", "..hhhh..........", ".....hhhhhh.....", "....hhhhhhhh....", "....hhh.........", "....hh.........."] },
+    east: {
+      dy: -3,
+      z: "front",
+      rows: [
+        "...hh...........",
+        "..hhhh..........",
+        ".....hhhhhh.....",
+        "....hhhhhhhh....",
+        "....hhh.........",
+        "....hh..........",
+      ],
+    },
   },
 };
 
 const ACCESSORY: Record<string, Partial<Record<DirKey, Overlay>>> = {
   none: {},
   visor: {
-    south: { dy: 0, z: "front", rows: ["....wwwwwwww....", "..wwwwwwwwwwww.."] },
+    south: {
+      dy: 0,
+      z: "front",
+      rows: ["....wwwwwwww....", "..wwwwwwwwwwww.."],
+    },
     north: { dy: 0, z: "front", rows: ["....wwwwwwww...."] },
     east: { dy: 0, z: "front", rows: ["....wwwwwwww....", "......wwwwwwww.."] },
   },
   strawhat: {
-    south: { dy: -3, z: "front", rows: [".....yyyyyy.....", "....yyyyyyyy....", "..yyyyyyyyyyyy..", ".yyyyyyyyyyyyyy."] },
-    north: { dy: -3, z: "front", rows: [".....yyyyyy.....", "....yyyyyyyy....", "..yyyyyyyyyyyy..", ".yyyyyyyyyyyyyy."] },
-    east: { dy: -3, z: "front", rows: [".....yyyyyy.....", "....yyyyyyyy....", "..yyyyyyyyyyyy..", ".yyyyyyyyyyyyyy."] },
+    south: {
+      dy: -3,
+      z: "front",
+      rows: [
+        ".....yyyyyy.....",
+        "....yyyyyyyy....",
+        "..yyyyyyyyyyyy..",
+        ".yyyyyyyyyyyyyy.",
+      ],
+    },
+    north: {
+      dy: -3,
+      z: "front",
+      rows: [
+        ".....yyyyyy.....",
+        "....yyyyyyyy....",
+        "..yyyyyyyyyyyy..",
+        ".yyyyyyyyyyyyyy.",
+      ],
+    },
+    east: {
+      dy: -3,
+      z: "front",
+      rows: [
+        ".....yyyyyy.....",
+        "....yyyyyyyy....",
+        "..yyyyyyyyyyyy..",
+        ".yyyyyyyyyyyyyy.",
+      ],
+    },
   },
   sunglasses: {
     south: { dy: 3, z: "front", rows: ["...kkkkkkkkkk..."] },
     east: { dy: 3, z: "front", rows: [".......kkkkkkk.."] },
   },
   snorkel: {
-    south: { dy: 0, z: "front", rows: ["..............cc", "..............cc", "....cccccccc..cc", "..............cc"] },
-    north: { dy: 0, z: "front", rows: ["..............cc", "..............cc", "....cccccccc..cc", "..............cc"] },
-    east: { dy: 0, z: "front", rows: [".............cc.", ".............cc.", "....cccccc...cc.", ".............cc."] },
+    south: {
+      dy: 0,
+      z: "front",
+      rows: [
+        "..............cc",
+        "..............cc",
+        "....cccccccc..cc",
+        "..............cc",
+      ],
+    },
+    north: {
+      dy: 0,
+      z: "front",
+      rows: [
+        "..............cc",
+        "..............cc",
+        "....cccccccc..cc",
+        "..............cc",
+      ],
+    },
+    east: {
+      dy: 0,
+      z: "front",
+      rows: [
+        ".............cc.",
+        ".............cc.",
+        "....cccccc...cc.",
+        ".............cc.",
+      ],
+    },
   },
   tie: {
-    south: { dy: 6, z: "front", rows: [".......rr.......", ".......rr.......", ".......rr.......", ".......rr.......", "........r......."] },
-    east: { dy: 6, z: "front", rows: ["..........r.....", "..........r.....", "..........r....."] },
+    south: {
+      dy: 6,
+      z: "front",
+      rows: [
+        ".......rr.......",
+        ".......rr.......",
+        ".......rr.......",
+        ".......rr.......",
+        "........r.......",
+      ],
+    },
+    east: {
+      dy: 6,
+      z: "front",
+      rows: ["..........r.....", "..........r.....", "..........r....."],
+    },
   },
   floatring: {
-    south: { dy: 11, z: "front", rows: [".aawwaaaaaawwaa.", ".aawwaaaaaawwaa."] },
-    north: { dy: 11, z: "front", rows: [".aawwaaaaaawwaa.", ".aawwaaaaaawwaa."] },
-    east: { dy: 11, z: "front", rows: ["..aawwaaaawwaa..", "..aawwaaaawwaa.."] },
+    south: {
+      dy: 11,
+      z: "front",
+      rows: [".aawwaaaaaawwaa.", ".aawwaaaaaawwaa."],
+    },
+    north: {
+      dy: 11,
+      z: "front",
+      rows: [".aawwaaaaaawwaa.", ".aawwaaaaaawwaa."],
+    },
+    east: {
+      dy: 11,
+      z: "front",
+      rows: ["..aawwaaaawwaa..", "..aawwaaaawwaa.."],
+    },
   },
 };
 
 const PROP: Record<string, Partial<Record<DirKey, Overlay>>> = {
   none: {},
   laptop: {
-    south: { dy: 8, z: "front", rows: [".....wwwwww.....", ".....wccccw.....", ".....wwwwww....."] },
-    east: { dy: 8, z: "front", rows: ["..........wwww..", "..........wccw..", "..........wwww.."] },
+    south: {
+      dy: 8,
+      z: "front",
+      rows: [".....wwwwww.....", ".....wccccw.....", ".....wwwwww....."],
+    },
+    east: {
+      dy: 8,
+      z: "front",
+      rows: ["..........wwww..", "..........wccw..", "..........wwww.."],
+    },
   },
   drink: {
-    south: { dy: 8, z: "front", rows: [".............a..", "............yy..", "............yy.."] },
-    east: { dy: 8, z: "front", rows: ["............a...", "...........yy...", "...........yy..."] },
+    south: {
+      dy: 8,
+      z: "front",
+      rows: [".............a..", "............yy..", "............yy.."],
+    },
+    east: {
+      dy: 8,
+      z: "front",
+      rows: ["............a...", "...........yy...", "...........yy..."],
+    },
   },
   surfboard: {
     south: {
@@ -357,19 +547,100 @@ const PROP: Record<string, Partial<Record<DirKey, Overlay>>> = {
     },
   },
   tote: {
-    south: { dy: 10, z: "front", rows: [".y..............", "yyy.............", "yyy.............", "yyy............."] },
-    north: { dy: 10, z: "behind", rows: [".y..............", "yyy.............", "yyy.............", "yyy............."] },
-    east: { dy: 10, z: "front", rows: ["............y...", "...........yyy..", "...........yyy..", "...........yyy.."] },
+    south: {
+      dy: 10,
+      z: "front",
+      rows: [
+        ".y..............",
+        "yyy.............",
+        "yyy.............",
+        "yyy.............",
+      ],
+    },
+    north: {
+      dy: 10,
+      z: "behind",
+      rows: [
+        ".y..............",
+        "yyy.............",
+        "yyy.............",
+        "yyy.............",
+      ],
+    },
+    east: {
+      dy: 10,
+      z: "front",
+      rows: [
+        "............y...",
+        "...........yyy..",
+        "...........yyy..",
+        "...........yyy..",
+      ],
+    },
   },
   beachball: {
-    south: { dy: 14, z: "front", rows: ["............rrww", "............rrww", "............wwbb", "............wwbb"] },
-    north: { dy: 14, z: "front", rows: ["............rrww", "............rrww", "............wwbb", "............wwbb"] },
-    east: { dy: 14, z: "front", rows: [".............rrw", ".............rrw", ".............wbb", ".............wbb"] },
+    south: {
+      dy: 14,
+      z: "front",
+      rows: [
+        "............rrww",
+        "............rrww",
+        "............wwbb",
+        "............wwbb",
+      ],
+    },
+    north: {
+      dy: 14,
+      z: "front",
+      rows: [
+        "............rrww",
+        "............rrww",
+        "............wwbb",
+        "............wwbb",
+      ],
+    },
+    east: {
+      dy: 14,
+      z: "front",
+      rows: [
+        ".............rrw",
+        ".............rrw",
+        ".............wbb",
+        ".............wbb",
+      ],
+    },
   },
   towel: {
-    south: { dy: 8, z: "front", rows: ["cc..............", "ww..............", "cc..............", "ww.............."] },
-    north: { dy: 8, z: "behind", rows: ["cc..............", "ww..............", "cc..............", "ww.............."] },
-    east: { dy: 8, z: "behind", rows: ["...cc...........", "...ww...........", "...cc...........", "...ww..........."] },
+    south: {
+      dy: 8,
+      z: "front",
+      rows: [
+        "cc..............",
+        "ww..............",
+        "cc..............",
+        "ww..............",
+      ],
+    },
+    north: {
+      dy: 8,
+      z: "behind",
+      rows: [
+        "cc..............",
+        "ww..............",
+        "cc..............",
+        "ww..............",
+      ],
+    },
+    east: {
+      dy: 8,
+      z: "behind",
+      rows: [
+        "...cc...........",
+        "...ww...........",
+        "...cc...........",
+        "...ww...........",
+      ],
+    },
   },
 };
 
@@ -409,7 +680,11 @@ const TRUNKS_EAST: Array<[number, number]> = [
   [4, 13],
 ];
 
-function applyStyles(grid: string[], dir: DirKey, cfg: CharacterConfig): string[][] {
+function applyStyles(
+  grid: string[],
+  dir: DirKey,
+  cfg: CharacterConfig,
+): string[][] {
   const cells = grid.map((row) => row.split(""));
   const isEast = dir === "east";
   if (cfg.topStyle === "tank") {
@@ -531,7 +806,9 @@ const OUTLINE_RGB = hexToRgb(PAL.black);
 function addOutline(px: SpritePixels, colorRgb: [number, number, number]) {
   const { width, height, data } = px;
   const alphaAt = (x: number, y: number) =>
-    x >= 0 && y >= 0 && x < width && y < height ? data[(y * width + x) * 4 + 3]! : 0;
+    x >= 0 && y >= 0 && x < width && y < height
+      ? data[(y * width + x) * 4 + 3]!
+      : 0;
   const outlined: Array<[number, number]> = [];
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -585,7 +862,8 @@ export function composeSprite(
   const data = new Uint8ClampedArray(SPRITE_W * SPRITE_H * 4);
   const px: SpritePixels = { width: SPRITE_W, height: SPRITE_H, data };
 
-  const overlays: Array<{ overlay: Overlay; layer: "hair" | "acc" | "prop" }> = [];
+  const overlays: Array<{ overlay: Overlay; layer: "hair" | "acc" | "prop" }> =
+    [];
   const hair = HAIR[cfg.hairStyle]?.[baseDir];
   if (hair) overlays.push({ overlay: hair, layer: "hair" });
   const acc = ACCESSORY[cfg.accessory]?.[baseDir];
@@ -612,7 +890,13 @@ export function composeSprite(
   for (const layer of ["hair", "acc", "prop"] as const) {
     for (const entry of overlays) {
       if (entry.layer !== layer || entry.overlay.z !== "front") continue;
-      paintRows(data, entry.overlay.rows, BODY_X, BODY_Y + entry.overlay.dy, cfg);
+      paintRows(
+        data,
+        entry.overlay.rows,
+        BODY_X,
+        BODY_Y + entry.overlay.dy,
+        cfg,
+      );
     }
   }
 

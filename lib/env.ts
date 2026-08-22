@@ -25,6 +25,7 @@ export function footerNote(): string {
 
 export function devOverlayEnabled(): boolean {
   return (
-    process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_DEV_OVERLAY === "1"
+    process.env.NODE_ENV !== "production" &&
+    process.env.NEXT_PUBLIC_DEV_OVERLAY === "1"
   );
 }

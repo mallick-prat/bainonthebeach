@@ -14,7 +14,14 @@ import {
 } from "@/game/movement/deterministic";
 import { FOOT_BASELINE } from "@/game/sprites/characterSprites";
 
-const PREVIEW_IDS = ["gull-1", "gull-2", "gull-3", "gull-4", "gull-5", "gull-6"];
+const PREVIEW_IDS = [
+  "gull-1",
+  "gull-2",
+  "gull-3",
+  "gull-4",
+  "gull-5",
+  "gull-6",
+];
 
 export function LandingPreview() {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -24,13 +31,14 @@ export function LandingPreview() {
     if (!canvas) return;
     let raf = 0;
     let disposed = false;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
     (async () => {
-      const [{ paintGround, worldProps }, { spriteCanvas }] = await Promise.all([
-        import("@/game/world/paint"),
-        import("@/game/sprites/toCanvas"),
-      ]);
+      const [{ paintGround, worldProps }, { spriteCanvas }] = await Promise.all(
+        [import("@/game/world/paint"), import("@/game/sprites/toCanvas")],
+      );
       if (disposed) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
@@ -55,8 +63,14 @@ export function LandingPreview() {
           });
         }
         for (const person of people) {
-          const state = reduced ? staticStateFor(person.id) : characterStateAt(person.id, t);
-          const sprite = spriteCanvas(person.config, state.dir, reduced ? "idle" : walkPose(state));
+          const state = reduced
+            ? staticStateFor(person.id)
+            : characterStateAt(person.id, t);
+          const sprite = spriteCanvas(
+            person.config,
+            state.dir,
+            reduced ? "idle" : walkPose(state),
+          );
           items.push({
             footY: state.y,
             draw: () =>

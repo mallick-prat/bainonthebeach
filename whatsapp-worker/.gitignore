@@ -1,0 +1,5 @@
+node_modules/
+.env
+.whatsapp-auth/
+whatsapp-session/
+baileys-auth/

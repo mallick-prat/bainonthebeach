@@ -18,10 +18,11 @@ import {
   SKIN_TONES,
   TOP_STYLES,
 } from "@/game/sprites/palette";
-import { OFFICES } from "@/lib/config/offices";
 import type { Direction } from "@/game/sprites/characterSprites";
 import { CharacterPreview } from "./CharacterPreview";
+import { WhatsAppSection } from "./WhatsAppSection";
 import { saveCharacterAction, type ActionResult } from "@/app/actions";
+import type { SelfWhatsApp } from "@/lib/data/types";
 
 const DIRS: Direction[] = ["south", "east", "north", "west"];
 
@@ -55,7 +56,13 @@ const LABELS: Record<string, string> = {
   towel: "Towel",
 };
 
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
+function Section({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="border-b-2 border-dotted border-night/15 pb-3 last:border-b-0 last:pb-0">
       <h2 className="font-pixel mb-2 text-[9px] text-night/70">{label}</h2>
@@ -64,7 +71,13 @@ function Section({ label, children }: { label: string; children: React.ReactNode
   );
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function Row({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex flex-col gap-1.5">
       <span className="font-mono text-[11px] uppercase tracking-wide text-night/60">
@@ -127,18 +140,19 @@ function Swatches({
 
 export function CharacterCreator({
   initialName,
-  initialOffice,
   initialConfig,
   firstTime,
+  initialWhatsApp,
+  demo,
 }: {
   initialName: string;
-  initialOffice: string | null;
   initialConfig: CharacterConfig;
   firstTime: boolean;
+  initialWhatsApp: SelfWhatsApp;
+  demo: boolean;
 }) {
   const [config, setConfig] = useState<CharacterConfig>(initialConfig);
   const [name, setName] = useState(initialName);
-  const [office, setOffice] = useState(initialOffice ?? "");
   const [dirIndex, setDirIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -146,9 +160,8 @@ export function CharacterCreator({
   const dirty = useMemo(
     () =>
       JSON.stringify(config) !== JSON.stringify(initialConfig) ||
-      name !== initialName ||
-      office !== (initialOffice ?? ""),
-    [config, name, office, initialConfig, initialName, initialOffice],
+      name !== initialName,
+    [config, name, initialConfig, initialName],
   );
 
   // Unsaved-changes guard for tab close / navigation away.
@@ -159,8 +172,10 @@ export function CharacterCreator({
     return () => window.removeEventListener("beforeunload", handler);
   }, [dirty]);
 
-  const set = <K extends keyof CharacterConfig>(key: K, value: CharacterConfig[K]) =>
-    setConfig((c) => ({ ...c, [key]: value }));
+  const set = <K extends keyof CharacterConfig>(
+    key: K,
+    value: CharacterConfig[K],
+  ) => setConfig((c) => ({ ...c, [key]: value }));
 
   const leave = (e: React.MouseEvent) => {
     if (dirty && !window.confirm("Leave without saving?")) {
@@ -183,7 +198,6 @@ export function CharacterCreator({
     startTransition(async () => {
       const res: ActionResult | void = await saveCharacterAction({
         displayName: trimmed,
-        officeCode: office === "" ? null : office,
         config: parsed.data,
       });
       if (res && !res.ok) setError(res.error);
@@ -194,7 +208,9 @@ export function CharacterCreator({
     <div className="mx-auto w-full max-w-[1100px] px-3 pb-24 pt-2">
       <div className="mb-2 flex items-center gap-3">
         {firstTime ? (
-          <span className="font-pixel text-[10px] text-pxyellow">MAKE YOUR CHARACTER</span>
+          <span className="font-pixel text-[10px] text-pxyellow">
+            MAKE YOUR CHARACTER
+          </span>
         ) : (
           <>
             <Link
@@ -204,7 +220,9 @@ export function CharacterCreator({
             >
               Back to beach
             </Link>
-            <span className="font-pixel text-[10px] text-pxyellow">EDIT CHARACTER</span>
+            <span className="font-pixel text-[10px] text-pxyellow">
+              EDIT CHARACTER
+            </span>
           </>
         )}
       </div>
@@ -212,7 +230,11 @@ export function CharacterCreator({
       <div className="grid gap-3 md:grid-cols-[236px_1fr]">
         {/* Preview */}
         <div className="pixel-panel flex flex-row items-center justify-center gap-3 self-start p-3 md:sticky md:top-3 md:flex-col">
-          <CharacterPreview config={config} direction={DIRS[dirIndex]!} scale={5} />
+          <CharacterPreview
+            config={config}
+            direction={DIRS[dirIndex]!}
+            scale={5}
+          />
           <div className="flex flex-col gap-2 md:w-full">
             <div className="flex justify-center gap-2">
               <button
@@ -245,7 +267,7 @@ export function CharacterCreator({
         {/* Options */}
         <div className="pixel-panel flex flex-col gap-4 p-4">
           <Section label="IDENTITY">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3">
               <div className="flex flex-col gap-1.5">
                 <label
                   htmlFor="name"
@@ -262,28 +284,8 @@ export function CharacterCreator({
                   autoComplete="nickname"
                 />
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label
-                  htmlFor="office"
-                  className="font-mono text-[11px] uppercase tracking-wide text-night/60"
-                >
-                  Office
-                </label>
-                <select
-                  id="office"
-                  className="pixel-input"
-                  value={office}
-                  onChange={(e) => setOffice(e.target.value)}
-                >
-                  <option value="">None</option>
-                  {OFFICES.map((o) => (
-                    <option key={o.code} value={o.code}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
+            <WhatsAppSection initial={initialWhatsApp} demo={demo} />
           </Section>
 
           <Section label="BODY">
@@ -300,7 +302,11 @@ export function CharacterCreator({
           <Section label="HAIR">
             <Row label="Style">
               {HAIR_STYLES.map((s) => (
-                <Chip key={s} selected={config.hairStyle === s} onClick={() => set("hairStyle", s)}>
+                <Chip
+                  key={s}
+                  selected={config.hairStyle === s}
+                  onClick={() => set("hairStyle", s)}
+                >
                   {LABELS[s]}
                 </Chip>
               ))}
@@ -318,7 +324,11 @@ export function CharacterCreator({
           <Section label="OUTFIT">
             <Row label="Top">
               {TOP_STYLES.map((s) => (
-                <Chip key={s} selected={config.topStyle === s} onClick={() => set("topStyle", s)}>
+                <Chip
+                  key={s}
+                  selected={config.topStyle === s}
+                  onClick={() => set("topStyle", s)}
+                >
                   {LABELS[s]}
                 </Chip>
               ))}
@@ -352,7 +362,11 @@ export function CharacterCreator({
             </Row>
             <Row label="Shoes">
               {SHOE_STYLES.map((s) => (
-                <Chip key={s} selected={config.shoes === s} onClick={() => set("shoes", s)}>
+                <Chip
+                  key={s}
+                  selected={config.shoes === s}
+                  onClick={() => set("shoes", s)}
+                >
                   {LABELS[s]}
                 </Chip>
               ))}
@@ -362,14 +376,22 @@ export function CharacterCreator({
           <Section label="EXTRAS">
             <Row label="Accessory">
               {ACCESSORIES.map((s) => (
-                <Chip key={s} selected={config.accessory === s} onClick={() => set("accessory", s)}>
+                <Chip
+                  key={s}
+                  selected={config.accessory === s}
+                  onClick={() => set("accessory", s)}
+                >
                   {LABELS[s]}
                 </Chip>
               ))}
             </Row>
             <Row label="Prop">
               {PROPS.map((s) => (
-                <Chip key={s} selected={config.prop === s} onClick={() => set("prop", s)}>
+                <Chip
+                  key={s}
+                  selected={config.prop === s}
+                  onClick={() => set("prop", s)}
+                >
                   {LABELS[s]}
                 </Chip>
               ))}
@@ -381,7 +403,11 @@ export function CharacterCreator({
       {/* Sticky save bar */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-pxwhite/20 bg-night/95 p-2 pb-[max(8px,env(safe-area-inset-bottom))]">
         <div className="mx-auto flex w-full max-w-[1100px] items-center justify-end gap-2 px-1">
-          <p role="status" aria-live="polite" className="mr-auto font-mono text-sm text-pxred">
+          <p
+            role="status"
+            aria-live="polite"
+            className="mr-auto font-mono text-sm text-pxred"
+          >
             {error}
           </p>
           {!firstTime && (
@@ -403,7 +429,6 @@ export function CharacterCreator({
           </button>
         </div>
       </div>
-
     </div>
   );
 }

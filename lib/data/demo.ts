@@ -1,26 +1,34 @@
 // Demo mode: everything local, no external services. Used when Supabase env
 // vars are missing (development, e2e tests). The store is per-server-process
 // and seeded with deterministic fixture beachgoers.
+//
+// WhatsApp in demo mode is fully simulated: the verification code is always
+// 424242 and membership resolves instantly. Real mode uses the worker.
 
 import { fnv1a, hash01 } from "@/game/movement/hash";
-import { randomCharacter, type CharacterConfig } from "@/lib/validation/character";
+import {
+  randomCharacter,
+  type CharacterConfig,
+} from "@/lib/validation/character";
+import type { MembershipState } from "@/lib/whatsapp/membership";
 import type { PublicProfile } from "./types";
 
 export const DEMO_COOKIE = "botb_demo_session";
+export const DEMO_VERIFICATION_CODE = "424242";
 
-const FIXTURES: Array<{ name: string; office: string | null }> = [
-  { name: "Priya", office: "BOS" },
-  { name: "Casey", office: "NYC" },
-  { name: "Jordan", office: "SF" },
-  { name: "Álvaro", office: "LON" },
-  { name: "Sam O.", office: "BOS" },
-  { name: "Devon", office: "CHI" },
-  { name: "Riley", office: "SYD" },
-  { name: "Morgan", office: null },
-  { name: "Taylor", office: "NYC" },
-  { name: "Jamie", office: "LON" },
-  { name: "Avery", office: null },
-  { name: "Jordan", office: "BOS" }, // duplicate display name on purpose
+const FIXTURES: string[] = [
+  "Priya",
+  "Casey",
+  "Jordan",
+  "Álvaro",
+  "Sam O.",
+  "Devon",
+  "Riley",
+  "Morgan",
+  "Taylor",
+  "Jamie",
+  "Avery",
+  "Jordan", // duplicate display name on purpose
 ];
 
 function seededRand(seed: string): () => number {
@@ -29,13 +37,12 @@ function seededRand(seed: string): () => number {
 }
 
 function fixtureProfile(index: number): PublicProfile {
-  const f = FIXTURES[index]!;
-  const id = `demo-${index}-${fnv1a(f.name, index).toString(16)}`;
+  const name = FIXTURES[index]!;
+  const id = `demo-${index}-${fnv1a(name, index).toString(16)}`;
   const config: CharacterConfig = randomCharacter(seededRand(id));
   return {
     id,
-    displayName: f.name,
-    officeCode: f.office,
+    displayName: name,
     characterConfig: config,
     characterSchemaVersion: 1,
     onBeach: index < 9, // a few fixtures stay off-beach
@@ -43,8 +50,20 @@ function fixtureProfile(index: number): PublicProfile {
   };
 }
 
+export interface DemoWhatsApp {
+  phoneE164: string;
+  countryCode: string;
+  lastFour: string;
+  verifiedAt: string | null;
+  optInAt: string | null;
+  consentVersion: string | null;
+  syncEnabled: boolean;
+  membershipState: MembershipState;
+}
+
 interface DemoStore {
   profiles: Map<string, PublicProfile>;
+  whatsapp: Map<string, DemoWhatsApp>;
 }
 
 const globalStore = globalThis as unknown as { __botbDemoStore?: DemoStore };
@@ -56,7 +75,11 @@ export function demoStore(): DemoStore {
       const p = fixtureProfile(i);
       profiles.set(p.id, p);
     }
-    globalStore.__botbDemoStore = { profiles };
+    globalStore.__botbDemoStore = { profiles, whatsapp: new Map() };
+  }
+  // Self-heal stores created by an older module version (dev HMR).
+  if (!globalStore.__botbDemoStore.whatsapp) {
+    globalStore.__botbDemoStore.whatsapp = new Map();
   }
   return globalStore.__botbDemoStore;
 }
@@ -78,7 +101,10 @@ export function parseDemoSession(raw: string | undefined): DemoSession | null {
       (parsed as DemoSession).id.length > 0 &&
       (parsed as DemoSession).id.length < 128
     ) {
-      return { id: (parsed as DemoSession).id, email: (parsed as DemoSession).email };
+      return {
+        id: (parsed as DemoSession).id,
+        email: (parsed as DemoSession).email,
+      };
     }
   } catch {
     // fall through
@@ -88,4 +114,19 @@ export function parseDemoSession(raw: string | undefined): DemoSession | null {
 
 export function demoIdForEmail(email: string): string {
   return `demo-user-${fnv1a(email.toLowerCase(), 42).toString(16)}`;
+}
+
+/** Recomputes a demo user's membership state from the authoritative rules. */
+export function demoReconcileMembership(userId: string): void {
+  const store = demoStore();
+  const wa = store.whatsapp.get(userId);
+  const profile = store.profiles.get(userId);
+  if (!wa || !profile) return;
+  const eligible =
+    wa.verifiedAt !== null && wa.optInAt !== null && wa.syncEnabled;
+  if (!eligible) {
+    wa.membershipState = wa.verifiedAt ? "not_connected" : wa.membershipState;
+    return;
+  }
+  wa.membershipState = profile.onBeach ? "member" : "not_member";
 }

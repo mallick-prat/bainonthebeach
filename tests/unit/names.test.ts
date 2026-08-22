@@ -3,11 +3,20 @@ import { nameSortKey, normalizeDisplayName } from "@/lib/validation/names";
 
 describe("display name normalization", () => {
   it("trims and collapses whitespace", () => {
-    expect(normalizeDisplayName("  Priya   S  ")).toEqual({ ok: true, name: "Priya S" });
+    expect(normalizeDisplayName("  Priya   S  ")).toEqual({
+      ok: true,
+      name: "Priya S",
+    });
   });
 
   it("preserves international names", () => {
-    for (const name of ["José", "Æble Ørsted", "山田太郎", "O'Brien", "Anne-Marie"]) {
+    for (const name of [
+      "José",
+      "Æble Ørsted",
+      "山田太郎",
+      "O'Brien",
+      "Anne-Marie",
+    ]) {
       const result = normalizeDisplayName(name);
       expect(result).toEqual({ ok: true, name });
     }

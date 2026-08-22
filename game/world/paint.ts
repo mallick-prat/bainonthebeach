@@ -20,7 +20,14 @@ import {
 
 type Ctx = CanvasRenderingContext2D;
 
-function px(ctx: Ctx, x: number, y: number, w: number, h: number, color: string) {
+function px(
+  ctx: Ctx,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  color: string,
+) {
   ctx.fillStyle = color;
   ctx.fillRect(x, y, w, h);
 }
@@ -37,7 +44,7 @@ function makeCanvas(w: number, h: number): [HTMLCanvasElement, Ctx] {
 /** Deterministic speckle so the ground is identical on every client. */
 function speckle(x: number, y: number, mod: number): boolean {
   const n = (x * 374761393 + y * 668265263) ^ ((x * 31 + y * 7) << 3);
-  return ((n >>> 0) % mod) === 0;
+  return (n >>> 0) % mod === 0;
 }
 
 /* ------------------------------------------------------------------ */
@@ -45,8 +52,11 @@ function speckle(x: number, y: number, mod: number): boolean {
 /* ------------------------------------------------------------------ */
 
 /** Land mask + chamfer distance maps, computed once and shared. */
-let masks: { land: Uint8Array; distToLand: Float32Array; distToWater: Float32Array } | null =
-  null;
+let masks: {
+  land: Uint8Array;
+  distToLand: Float32Array;
+  distToWater: Float32Array;
+} | null = null;
 
 function chamfer(seed: (i: number) => boolean): Float32Array {
   const dist = new Float32Array(WORLD_W * WORLD_H).fill(1e6);
@@ -59,7 +69,8 @@ function chamfer(seed: (i: number) => boolean): Float32Array {
       if (y > 0) {
         dist[i] = Math.min(dist[i]!, dist[i - WORLD_W]! + 1);
         if (x > 0) dist[i] = Math.min(dist[i]!, dist[i - WORLD_W - 1]! + 1);
-        if (x < WORLD_W - 1) dist[i] = Math.min(dist[i]!, dist[i - WORLD_W + 1]! + 1);
+        if (x < WORLD_W - 1)
+          dist[i] = Math.min(dist[i]!, dist[i - WORLD_W + 1]! + 1);
       }
     }
   }
@@ -69,7 +80,8 @@ function chamfer(seed: (i: number) => boolean): Float32Array {
       if (x < WORLD_W - 1) dist[i] = Math.min(dist[i]!, dist[i + 1]! + 1);
       if (y < WORLD_H - 1) {
         dist[i] = Math.min(dist[i]!, dist[i + WORLD_W]! + 1);
-        if (x < WORLD_W - 1) dist[i] = Math.min(dist[i]!, dist[i + WORLD_W + 1]! + 1);
+        if (x < WORLD_W - 1)
+          dist[i] = Math.min(dist[i]!, dist[i + WORLD_W + 1]! + 1);
         if (x > 0) dist[i] = Math.min(dist[i]!, dist[i + WORLD_W - 1]! + 1);
       }
     }
@@ -117,8 +129,7 @@ export function paintGround(frame: 0 | 1): HTMLCanvasElement {
       const d = distToLand[i]!;
       if (d <= 2) {
         // Foam dashes hugging the whole coastline, alternating per frame.
-        const on =
-          frame === 0 ? (x + y) % 10 < 5 : (x + y + 5) % 10 < 5;
+        const on = frame === 0 ? (x + y) % 10 < 5 : (x + y + 5) % 10 < 5;
         px(ctx, x, y, 1, 1, on ? PAL.white : PAL.cyan);
       } else if (d <= 11) {
         px(ctx, x, y, 1, 1, PAL.cyan);

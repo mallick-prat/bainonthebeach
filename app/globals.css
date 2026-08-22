@@ -78,7 +78,9 @@ body {
   color: var(--foreground);
   font-family: var(--font-jetbrains), ui-monospace, monospace;
   /* Pixel cursor (generated, original art). Falls back to system cursor. */
-  cursor: url("/assets/ui/cursor-arrow.png") 2 2, auto;
+  cursor:
+    url("/assets/ui/cursor-arrow.png") 2 2,
+    auto;
 }
 
 a,
@@ -89,7 +91,9 @@ select,
 summary,
 input[type="radio"],
 input[type="checkbox"] {
-  cursor: url("/assets/ui/cursor-pointer.png") 10 4, pointer;
+  cursor:
+    url("/assets/ui/cursor-pointer.png") 10 4,
+    pointer;
 }
 
 .font-pixel {
@@ -304,8 +308,14 @@ canvas,
 
 /* Blocky loading skeleton, no circular spinners. */
 @keyframes pixel-blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0.25; }
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.25;
+  }
 }
 
 .pixel-skeleton {
@@ -314,8 +324,14 @@ canvas,
 }
 
 @keyframes pixel-bob {
-  0%, 49% { transform: translateY(0); }
-  50%, 100% { transform: translateY(-2px); }
+  0%,
+  49% {
+    transform: translateY(0);
+  }
+  50%,
+  100% {
+    transform: translateY(-2px);
+  }
 }
 
 .pixel-bob {

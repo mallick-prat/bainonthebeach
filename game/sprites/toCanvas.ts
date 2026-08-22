@@ -26,7 +26,11 @@ export function spriteCanvas(
   canvas.height = px.height;
   const ctx = canvas.getContext("2d")!;
   ctx.putImageData(
-    new ImageData(px.data as Uint8ClampedArray<ArrayBuffer>, px.width, px.height),
+    new ImageData(
+      px.data as Uint8ClampedArray<ArrayBuffer>,
+      px.width,
+      px.height,
+    ),
     0,
     0,
   );

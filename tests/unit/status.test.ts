@@ -16,9 +16,14 @@ describe("status timestamp invariant", () => {
   });
 
   it("detects inconsistent states", () => {
-    expect(statusIsConsistent({ onBeach: true, onBeachSince: null })).toBe(false);
+    expect(statusIsConsistent({ onBeach: true, onBeachSince: null })).toBe(
+      false,
+    );
     expect(
-      statusIsConsistent({ onBeach: false, onBeachSince: new Date().toISOString() }),
+      statusIsConsistent({
+        onBeach: false,
+        onBeachSince: new Date().toISOString(),
+      }),
     ).toBe(false);
   });
 });
