@@ -168,6 +168,9 @@ export async function savePhoneAction(raw: unknown): Promise<ActionResult> {
     return fail("invalid_phone");
   }
 
+  const profile = await getProfile(auth.id).catch(() => null);
+  if (!profile?.characterConfig) return fail("no_profile");
+
   if (isDemoMode()) {
     try {
       demoSavePhone(auth.id, phone, parsed.data.consent);
@@ -188,6 +191,7 @@ export async function savePhoneAction(raw: unknown): Promise<ActionResult> {
     logServer("whatsapp_request_failed", { code: error.code });
     if (error.message?.includes("duplicate")) return fail("duplicate_number");
     if (error.message?.includes("rate")) return fail("rate_limited");
+    if (error.message?.includes("no_profile")) return fail("no_profile");
     return fail("save_failed");
   }
   return { ok: true };

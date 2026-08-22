@@ -285,7 +285,7 @@ export function CharacterCreator({
                 />
               </div>
             </div>
-            <WhatsAppSection initial={initialWhatsApp} demo={demo} />
+            <WhatsAppSection initial={initialWhatsApp} demo={demo} hasProfile={!firstTime} />
           </Section>
 
           <Section label="BODY">
