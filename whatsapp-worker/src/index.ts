@@ -9,7 +9,9 @@ import {
   finishJob,
   getGroupConfig,
   getWaProfile,
+  getWaProfileByPhone,
   isOnBeach,
+  setBeachDirect,
   setMembershipState,
   updateGroupConfig,
 } from "./db";
@@ -116,11 +118,51 @@ async function pumpAdminCommands() {
   }
 }
 
+// Bidirectional sync: leaving the WhatsApp group takes you off the beach;
+// joining it (verified + consented) puts you on. Worker-initiated changes
+// are naturally filtered because they only run when the database already
+// matches the target state.
+async function handleParticipants(
+  gJid: string,
+  participants: string[],
+  action: string,
+) {
+  if (!groupJid || gJid !== groupJid) return;
+  if (action !== "add" && action !== "remove") return;
+  for (const jid of participants) {
+    const phone = `+${jid.split("@")[0]?.split(":")[0] ?? ""}`;
+    if (!/^\+\d{6,15}$/.test(phone)) continue;
+    const wa = await getWaProfileByPhone(db, phone);
+    if (!wa) continue;
+    const onBeach = await isOnBeach(db, wa.user_id);
+    if (action === "remove" && onBeach) {
+      await setBeachDirect(db, wa.user_id, false);
+      await setMembershipState(db, wa.user_id, "not_member", null);
+      log.info("beach_left_via_whatsapp", { userId: wa.user_id });
+    } else if (
+      action === "add" &&
+      !onBeach &&
+      wa.phone_verified_at !== null &&
+      wa.whatsapp_opt_in_at !== null &&
+      wa.whatsapp_sync_enabled
+    ) {
+      await setBeachDirect(db, wa.user_id, true);
+      await setMembershipState(db, wa.user_id, "member", null);
+      log.info("beach_joined_via_whatsapp", { userId: wa.user_id });
+    }
+  }
+}
+
 async function main() {
   log.info("worker_starting", {});
   await getGroupConfig(db); // fail fast if migrations are missing
   adapter.onReconnected = () => {
     void ensureGroupSafe().then(() => runReconcile());
+  };
+  adapter.onParticipantsChange = (gJid, participants, action) => {
+    handleParticipants(gJid, participants, action).catch((e) =>
+      log.error("participant_event_failed", { message: String(e) }),
+    );
   };
   await adapter.connect();
 

@@ -138,3 +138,33 @@ export async function isOnBeach(db: Db, userId: string): Promise<boolean> {
     .maybeSingle();
   return Boolean(data?.on_beach);
 }
+
+export interface WaProfileByPhone {
+  user_id: string;
+  phone_verified_at: string | null;
+  whatsapp_opt_in_at: string | null;
+  whatsapp_sync_enabled: boolean;
+}
+
+export async function getWaProfileByPhone(
+  db: Db,
+  phoneE164: string,
+): Promise<WaProfileByPhone | null> {
+  const { data } = await db
+    .from("whatsapp_profiles")
+    .select("user_id, phone_verified_at, whatsapp_opt_in_at, whatsapp_sync_enabled")
+    .eq("phone_e164", phoneE164)
+    .maybeSingle();
+  return (data as WaProfileByPhone | null) ?? null;
+}
+
+/** Worker-authoritative beach flip (used by the WhatsApp -> app direction). */
+export async function setBeachDirect(db: Db, userId: string, on: boolean): Promise<void> {
+  await db
+    .from("profiles")
+    .update({
+      on_beach: on,
+      on_beach_since: on ? new Date().toISOString() : null,
+    })
+    .eq("id", userId);
+}

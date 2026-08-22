@@ -39,6 +39,9 @@ export class BaileysAdapter implements WhatsAppAdapter {
   private metaCache = new NodeCache({ stdTTL: 60 });
   private reconnectDelay = 2_000;
   onReconnected: (() => void) | null = null;
+  onParticipantsChange:
+    | ((groupJid: string, participants: string[], action: string) => void)
+    | null = null;
 
   constructor(db: Db) {
     this.db = db;
@@ -110,7 +113,10 @@ export class BaileysAdapter implements WhatsAppAdapter {
     sock.ev.on("groups.update", (updates) => {
       for (const u of updates) if (u.id) this.metaCache.del(u.id);
     });
-    sock.ev.on("group-participants.update", (u) => this.metaCache.del(u.id));
+    sock.ev.on("group-participants.update", (u) => {
+      this.metaCache.del(u.id);
+      this.onParticipantsChange?.(u.id, u.participants ?? [], u.action);
+    });
   }
 
   private scheduleReconnect() {

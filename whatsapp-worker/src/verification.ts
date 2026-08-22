@@ -1,9 +1,8 @@
 // Sends verification codes for pending requests: confirm the number is on
-// WhatsApp, generate a secure code, store only its bcrypt hash, message the
+// WhatsApp, generate a secure code, store only its keyed hash, message the
 // number from the dedicated account.
 
-import { randomInt } from "node:crypto";
-import bcrypt from "bcryptjs";
+import { createHash, randomInt } from "node:crypto";
 import type { WhatsAppAdapter } from "./adapter";
 import { setMembershipState, type Db } from "./db";
 import { log } from "./log";
@@ -33,9 +32,10 @@ export async function processVerificationSends(
         });
         continue;
       }
-      // Cryptographically secure six-digit code; only the hash is stored.
+      // Cryptographically secure six-digit code; only a keyed hash is
+      // stored (SHA-256; matches whatsapp_verify_code in the database).
       const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
-      const hash = bcrypt.hashSync(code, 10);
+      const hash = createHash("sha256").update(code + row.user_id).digest("hex");
       const { data: updated } = await db
         .from("whatsapp_verification_codes")
         .update({ code_hash: hash, send_state: "sent" })
