@@ -2,13 +2,15 @@
 // survive worker restarts on ephemeral filesystems. Modeled after
 // useMultiFileAuthState, with the database as the store.
 
-import {
-  initAuthCreds,
-  BufferJSON,
-  proto,
-  type AuthenticationState,
-  type SignalDataTypeMap,
-} from "@whiskeysockets/baileys";
+// Default-import + destructure: Baileys is CJS and Node's ESM named-export
+// detection misses re-exports like `proto`.
+import baileysPkg from "@whiskeysockets/baileys";
+import type { AuthenticationState, SignalDataTypeMap } from "@whiskeysockets/baileys";
+
+const { initAuthCreds, BufferJSON, proto } = baileysPkg as unknown as Pick<
+  typeof import("@whiskeysockets/baileys"),
+  "initAuthCreds" | "BufferJSON" | "proto"
+>;
 import type { Db } from "./db";
 import { decrypt, encrypt } from "./crypto";
 

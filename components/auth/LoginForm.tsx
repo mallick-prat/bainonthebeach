@@ -40,7 +40,7 @@ export function LoginForm({
           required
           autoComplete="email"
           className="pixel-input"
-          placeholder="you@example.com"
+          placeholder="bill@williambain.com"
         />
         <button className="pixel-btn pixel-btn-primary" disabled={demoPending}>
           {demoPending ? "Entering..." : "Enter the beach"}
@@ -151,7 +151,7 @@ export function LoginForm({
             className="pixel-input"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@bain.com"
+            placeholder="bill@williambain.com"
           />
           <button className="pixel-btn pixel-btn-primary" disabled={busy}>
             {busy ? "Sending..." : "Send link + code"}
