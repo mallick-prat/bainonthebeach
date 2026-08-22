@@ -11,6 +11,9 @@ export function Footer() {
       <Link href="/privacy" className="underline hover:text-pxwhite">
         Privacy
       </Link>
+      <Link href="/login" className="underline hover:text-pxwhite">
+        Sign in
+      </Link>
     </footer>
   );
 }

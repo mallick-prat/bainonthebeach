@@ -130,6 +130,14 @@ async function main() {
   setInterval(() => void runReconcile(), env.reconcileIntervalMs);
 }
 
+// Baileys surfaces socket races as unhandled rejections; log and survive.
+process.on("unhandledRejection", (e) => {
+  log.error("unhandled_rejection", { message: String(e) });
+});
+process.on("uncaughtException", (e) => {
+  log.error("uncaught_exception", { message: String(e) });
+});
+
 main().catch((e) => {
   log.error("worker_fatal", { message: String(e) });
   process.exit(1);

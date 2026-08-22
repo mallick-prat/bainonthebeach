@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { demoSignInAction, type ActionResult } from "@/app/actions";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
 import { track } from "@/lib/observability/analytics";
@@ -23,6 +23,24 @@ export function LoginForm({
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(initialError);
   const [busy, setBusy] = useState(false);
+  const [googleEnabled, setGoogleEnabled] = useState(false);
+
+  // Only show the Google button when the provider is actually enabled.
+  useEffect(() => {
+    if (demo) return;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return;
+    const controller = new AbortController();
+    fetch(`${url}/auth/v1/settings`, {
+      headers: { apikey: key },
+      signal: controller.signal,
+    })
+      .then((r) => r.json())
+      .then((cfg) => setGoogleEnabled(Boolean(cfg?.external?.google)))
+      .catch(() => {});
+    return () => controller.abort();
+  }, [demo]);
 
   if (demo) {
     return (
@@ -127,17 +145,21 @@ export function LoginForm({
           Cookies are blocked. Sign in needs them.
         </p>
       )}
-      <button
-        type="button"
-        onClick={signInGoogle}
-        className="pixel-btn pixel-btn-secondary"
-      >
-        Continue with Google
-      </button>
-      <div
-        className="my-1 border-t-2 border-dashed border-night/30"
-        aria-hidden
-      />
+      {googleEnabled && (
+        <>
+          <button
+            type="button"
+            onClick={signInGoogle}
+            className="pixel-btn pixel-btn-secondary"
+          >
+            Continue with Google
+          </button>
+          <div
+            className="my-1 border-t-2 border-dashed border-night/30"
+            aria-hidden
+          />
+        </>
+      )}
       {phase === "start" ? (
         <form onSubmit={sendEmail} className="flex flex-col gap-3">
           <label className="text-sm" htmlFor="email">

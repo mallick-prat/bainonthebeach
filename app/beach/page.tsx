@@ -5,7 +5,7 @@ import { BeachClient } from "@/components/beach-ui/BeachClient";
 
 export default async function BeachPage() {
   const user = await getSessionUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/auth/guest");
   const profile = await getProfile(user.id).catch(() => null);
   if (!profile?.characterConfig) redirect("/create-character");
   let snapshot;

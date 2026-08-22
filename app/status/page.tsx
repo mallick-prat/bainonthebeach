@@ -5,7 +5,7 @@ import { StatusChoice } from "@/components/beach-ui/StatusChoice";
 
 export default async function StatusPage() {
   const user = await getSessionUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/auth/guest");
   const profile = await getProfile(user.id).catch(() => null);
   if (!profile?.characterConfig) redirect("/create-character");
   return (

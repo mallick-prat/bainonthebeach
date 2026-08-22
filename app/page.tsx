@@ -27,8 +27,7 @@ export default async function LandingPage() {
         </h1>
       </div>
       <LandingPreview />
-      <p className="text-sm text-pxwhite/80">Clocked out. Washed ashore.</p>
-      <Link href="/login" className="pixel-btn pixel-btn-primary">
+      <Link href="/auth/guest" className="pixel-btn pixel-btn-primary">
         Enter the beach
       </Link>
       <Footer />

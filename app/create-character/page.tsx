@@ -8,7 +8,7 @@ import { CharacterCreator } from "@/components/character-creator/CharacterCreato
 
 export default async function CreateCharacterPage() {
   const user = await getSessionUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/auth/guest");
   const profile = await getProfile(user.id).catch(() => null);
   const whatsapp = await getSelfWhatsApp(user.id);
   const initialName =
